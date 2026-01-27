@@ -1,0 +1,19 @@
+name = "uf90-sync"
+version = "0.1.0"
+license = "MIT"
+author = "you"
+maintainer = "you"
+description = "Transpiler .uf90 -> .f90 (Greek/Delta) for conservative workflows"
+keywords = ["fortran", "fpm", "unicode", "transpiler"]
+
+[build]
+auto-executables = true
+
+[[executable]]
+name = "uf90-sync"
+source-dir = "app"
+main = "uf90_sync.f90"
+
+[dependencies]
+stdlib = "*"
+
