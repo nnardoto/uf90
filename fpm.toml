@@ -1,19 +1,34 @@
-name = "uf90-sync"
-version = "0.1.0"
+name = "uf90"
+version = "2.0.0"
 license = "MIT"
-author = "you"
-maintainer = "you"
-description = "Transpiler .uf90 -> .f90 (Greek/Delta) for conservative workflows"
-keywords = ["fortran", "fpm", "unicode", "transpiler"]
+author = "Unicode Fortran Contributors"
+maintainer = "community@uf90.dev"
+description = "Unicode to ASCII translator for Fortran - Write readable code with Greek letters"
+categories = ["fortran", "preprocessor", "unicode", "developer-tools"]
+keywords = ["fortran", "unicode", "greek-letters", "preprocessor", "fpm"]
+homepage = "https://github.com/seu-usuario/uf90"
 
 [build]
 auto-executables = true
-
-[[executable]]
-name = "uf90-sync"
-source-dir = "app"
-main = "uf90_sync.f90"
+auto-tests = false
+auto-examples = false
 
 [dependencies]
 stdlib = "*"
 
+[fortran]
+# Enforce strict standards for better code quality
+# implicit-typing = false
+# implicit-external = false
+
+[[executable]]
+name = "uf90-sync"
+source-dir = "app"
+main = "uf90_sync_main.f90"
+
+[install]
+library = false
+
+[dev-dependencies]
+# Add test-drive for unit testing if needed
+# test-drive = "*"
