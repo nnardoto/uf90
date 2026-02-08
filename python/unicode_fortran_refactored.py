@@ -575,18 +575,18 @@ def create_argument_parser() -> argparse.ArgumentParser:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Exemplos de uso:
-  %(prog)s meu_codigo.uf90                  # Gera meu_codigo.f90
-  %(prog)s input.uf90 -o output.f90         # Especifica saída
+  %(prog)s meu_codigo.f90u                  # Gera meu_codigo.f90
+  %(prog)s input.f90u -o output.f90         # Especifica saída
   %(prog)s codigo.f90 --no-preserve         # Traduz também comentários
   %(prog)s --generate-table                 # Gera tabela de referência
-  %(prog)s --verbose arquivo.uf90           # Modo verboso
+  %(prog)s --verbose arquivo.f90u           # Modo verboso
         """
     )
     
     parser.add_argument(
         'input_file',
         nargs='?',
-        help='Arquivo Fortran com Unicode (.uf90, .f90, etc)'
+        help='Arquivo Fortran com Unicode (.f90u, .f90, etc)'
     )
     
     parser.add_argument(

@@ -267,7 +267,7 @@ Find and copy symbols
 
 ## Reserved Identifiers
 
-These ASCII names CANNOT be used in .uf90 files:
+These ASCII names CANNOT be used in .f90u files:
 
 **Lowercase Greek:**
 `alpha`, `beta`, `gamma`, `delta`, `epsilon`, `zeta`, `eta`, `theta`, `iota`, `kappa`, `lambda`, `mu`, `nu`, `xi`, `omicron`, `pi`, `rho`, `sigma`, `tau`, `upsilon`, `phi`, `chi`, `psi`, `omega`

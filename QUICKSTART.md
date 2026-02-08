@@ -15,7 +15,7 @@ chmod +x unicode_fortran_refactored.py
 ./unicode_fortran_refactored.py --help
 
 # 3. Translate your first file
-./unicode_fortran_refactored.py ../examples/exemplo.uf90
+./unicode_fortran_refactored.py ../examples/exemplo.f90u
 ```
 
 **Done!** Your translated file is ready.
@@ -43,13 +43,13 @@ cd your-fpm-project/
 uf90-sync
 ```
 
-**Done!** All your `.uf90` files are now synced.
+**Done!** All your `.f90u` files are now synced.
 
 ---
 
 ## Your First Unicode Fortran File
 
-Create `hello_unicode.uf90`:
+Create `hello_unicode.f90u`:
 
 ```fortran
 program hello_unicode
@@ -80,7 +80,7 @@ Translate it:
 
 ```bash
 # Python
-./python/unicode_fortran_refactored.py hello_unicode.uf90
+./python/unicode_fortran_refactored.py hello_unicode.f90u
 
 # Fortran (in FPM project)
 uf90-sync
@@ -100,11 +100,11 @@ gfortran hello_unicode.f90 -o hello
 ### Workflow 1: Standalone File
 
 ```bash
-# Create .uf90 file
-vim physics.uf90
+# Create .f90u file
+vim physics.f90u
 
 # Translate (Python)
-uf90-py physics.uf90
+uf90-py physics.f90u
 
 # Compile
 gfortran physics.f90 -o physics
@@ -120,8 +120,8 @@ gfortran physics.f90 -o physics
 fpm init my_project
 cd my_project
 
-# Create .uf90 files in src/
-vim src/my_module.uf90
+# Create .f90u files in src/
+vim src/my_module.f90u
 
 # Sync
 uf90-sync
@@ -139,9 +139,9 @@ fpm run
 # In your existing project
 cd existing_project/
 
-# Create .uf90 versions of your files
-cp src/module.f90 src/module.uf90
-vim src/module.uf90  # Add Unicode symbols
+# Create .f90u versions of your files
+cp src/module.f90 src/module.f90u
+vim src/module.f90u  # Add Unicode symbols
 
 # Sync
 uf90-sync
@@ -161,11 +161,11 @@ make  # or fpm build
 
 ```bash
 # Basic
-uf90-py file.uf90                    # Creates file.f90
+uf90-py file.f90u                    # Creates file.f90
 
 # With options
-uf90-py file.uf90 -o custom.f90      # Custom output
-uf90-py -v file.uf90                 # Verbose
+uf90-py file.f90u -o custom.f90      # Custom output
+uf90-py -v file.f90u                 # Verbose
 uf90-py --generate-table             # Create reference
 
 # Get help
@@ -176,7 +176,7 @@ uf90-py --help
 
 ```bash
 # In any FPM project
-uf90-sync                            # Sync all .uf90 files
+uf90-sync                            # Sync all .f90u files
 
 # That's it! No options needed
 # (Automatically finds and processes all files)

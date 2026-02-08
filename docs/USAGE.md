@@ -21,8 +21,8 @@ fpm install uf90                    # Fortran version
 # or
 pip install uf90                    # Python version (coming soon)
 
-# 2. Create a .uf90 file
-cat > hello.uf90 << 'EOF'
+# 2. Create a .f90u file
+cat > hello.f90u << 'EOF'
 program hello
   real :: α = 3.14
   print *, "α =", α
@@ -32,7 +32,7 @@ EOF
 # 3. Translate
 uf90-sync                           # Fortran
 # or
-uf90-py hello.uf90                  # Python
+uf90-py hello.f90u                  # Python
 
 # 4. Compile and run
 fpm run                             # If using FPM
@@ -65,18 +65,18 @@ export PATH="$HOME/.local/bin:$PATH"
 my_project/
 ├── fpm.toml
 ├── src/
-│   ├── module1.uf90
-│   └── module2.uf90
+│   ├── module1.f90u
+│   └── module2.f90u
 ├── app/
-│   └── main.uf90
+│   └── main.f90u
 └── test/
-    └── test_module1.uf90
+    └── test_module1.f90u
 ```
 
 **Workflow:**
 ```bash
-# Edit .uf90 files
-vim src/module1.uf90
+# Edit .f90u files
+vim src/module1.f90u
 
 # Sync (generates .f90)
 uf90-sync
@@ -89,8 +89,8 @@ fpm run
 ```
 
 **What uf90-sync does:**
-1. Searches `src/`, `app/`, `test/` for `.uf90` files
-2. For each `.uf90`:
+1. Searches `src/`, `app/`, `test/` for `.f90u` files
+2. For each `.f90u`:
    - Checks if corresponding `.f90` needs regeneration
    - Validates no reserved identifiers used
    - Translates Unicode → ASCII
@@ -103,21 +103,21 @@ fpm run
 uf90-sync has no command-line options (simplicity by design).
 It always:
 - Runs from FPM project root
-- Processes all `.uf90` files
+- Processes all `.f90u` files
 - Preserves Unicode in comments
 - Uses incremental updates
 
 **To force regeneration:**
 ```bash
-# Touch all .uf90 files
-find . -name "*.uf90" -exec touch {} +
+# Touch all .f90u files
+find . -name "*.f90u" -exec touch {} +
 uf90-sync
 ```
 
 **To clean generated files:**
 ```bash
 # Find and remove generated .f90 files
-find . -name "*.f90" -exec grep -l "GENERATED FROM .uf90" {} \; | xargs rm
+find . -name "*.f90" -exec grep -l "GENERATED FROM .f90u" {} \; | xargs rm
 ```
 
 ## Python Version
@@ -140,16 +140,16 @@ sudo chmod +x /usr/local/bin/uf90-py
 
 ```bash
 # Basic translation
-uf90-py input.uf90
+uf90-py input.f90u
 
 # Specify output file
-uf90-py input.uf90 -o output.f90
+uf90-py input.f90u -o output.f90
 
 # Translate Unicode in comments too
-uf90-py input.uf90 --no-preserve
+uf90-py input.f90u --no-preserve
 
 # Verbose mode (shows statistics)
-uf90-py -v input.uf90
+uf90-py -v input.f90u
 
 # Generate reference table
 uf90-py --generate-table
@@ -174,7 +174,7 @@ print(result)  # "real :: alpha, beta"
 
 # Process file
 processor = FileProcessor(translator, verbose=True)
-output_path = processor.process_file("input.uf90", "output.f90")
+output_path = processor.process_file("input.f90u", "output.f90")
 
 # Access mappings
 registry = MappingRegistry()
@@ -193,7 +193,7 @@ print(mapping.ascii_replacement)  # "alpha"
 all: build
 
 sync:
-	@echo "Syncing .uf90 files..."
+	@echo "Syncing .f90u files..."
 	@uf90-sync
 
 build: sync
@@ -203,7 +203,7 @@ build: sync
 clean:
 	@echo "Cleaning..."
 	@rm -rf build/
-	@find . -name "*.f90" -exec grep -l "GENERATED FROM .uf90" {} \; | xargs rm -f
+	@find . -name "*.f90" -exec grep -l "GENERATED FROM .f90u" {} \; | xargs rm -f
 
 run: build
 	@fpm run
@@ -237,9 +237,9 @@ exit 0
 **Pre-push hook** (`.git/hooks/pre-push`):
 ```bash
 #!/bin/bash
-# Verify all .uf90 files are synced
+# Verify all .f90u files are synced
 
-echo "Verifying .uf90 sync status..."
+echo "Verifying .f90u sync status..."
 
 if command -v uf90-sync &> /dev/null; then
     # Run sync
@@ -247,12 +247,12 @@ if command -v uf90-sync &> /dev/null; then
     
     # Check if any files changed
     if ! git diff --quiet '*.f90'; then
-        echo "✗ Error: .uf90 files not synced with .f90"
+        echo "✗ Error: .f90u files not synced with .f90"
         echo "  Run 'uf90-sync' and commit changes"
         exit 1
     fi
     
-    echo "✓ All .uf90 files synced"
+    echo "✓ All .f90u files synced"
 else
     echo "⚠ uf90-sync not found, skipping check"
 fi
@@ -275,17 +275,17 @@ find_program(UF90_SYNC uf90-sync)
 if(UF90_SYNC)
     message(STATUS "Found uf90-sync: ${UF90_SYNC}")
     
-    # Add custom target to sync .uf90 files
+    # Add custom target to sync .f90u files
     add_custom_target(sync-unicode
         COMMAND ${UF90_SYNC}
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        COMMENT "Syncing .uf90 files..."
+        COMMENT "Syncing .f90u files..."
     )
     
     # Make main target depend on sync
     add_dependencies(${PROJECT_NAME} sync-unicode)
 else()
-    message(WARNING "uf90-sync not found, .uf90 files won't be synced automatically")
+    message(WARNING "uf90-sync not found, .f90u files won't be synced automatically")
 endif()
 ```
 
@@ -303,7 +303,7 @@ See `.github/workflows/ci.yml` for complete example.
 ### Example 1: Physics Simulation
 
 ```fortran
-! src/physics.uf90
+! src/physics.f90u
 module physics_constants
   implicit none
   
@@ -344,8 +344,8 @@ end module electromagnetic_field
 
 **After uf90-sync:**
 ```fortran
-! GENERATED FROM .uf90 SOURCE; DO NOT EDIT THIS .f90 FILE DIRECTLY
-! SOURCE: src/physics.uf90
+! GENERATED FROM .f90u SOURCE; DO NOT EDIT THIS .f90 FILE DIRECTLY
+! SOURCE: src/physics.f90u
 
 module physics_constants
   implicit none
@@ -363,7 +363,7 @@ end module physics_constants
 ### Example 2: Statistical Analysis
 
 ```fortran
-! src/statistics.uf90
+! src/statistics.f90u
 module statistics
   implicit none
   
@@ -403,7 +403,7 @@ end module statistics
 ### Example 3: Matrix Operations
 
 ```fortran
-! src/linalg.uf90
+! src/linalg.f90u
 module linear_algebra
   implicit none
   
@@ -462,7 +462,7 @@ uf90-sync
 
 **Issue: "ERRO: identificador ASCII reservado"**
 ```
-Error: Don't use ASCII names like 'alpha', 'beta' in .uf90
+Error: Don't use ASCII names like 'alpha', 'beta' in .f90u
 Solution: Use Unicode symbols α, β instead
 ```
 
@@ -481,7 +481,7 @@ Solution:
 python3 --version
 
 # Try explicit invocation
-python3 unicode_fortran_refactored.py file.uf90
+python3 unicode_fortran_refactored.py file.f90u
 ```
 
 ### Getting Help
@@ -509,8 +509,8 @@ fpm build --flag "-j$(nproc)"
 
 ## Best Practices
 
-1. **Always use .uf90 extension** for Unicode files
-2. **Commit both .uf90 and .f90** to git
+1. **Always use .f90u extension** for Unicode files
+2. **Commit both .f90u and .f90** to git
 3. **Run uf90-sync before building**
 4. **Use meaningful variable names** even with Unicode
 5. **Add comments** explaining physics/math concepts
@@ -526,13 +526,13 @@ See [CONTRIBUTING.md](../CONTRIBUTING.md) for how to add new Unicode symbols.
 
 **VS Code:**
 - Install "Modern Fortran" extension
-- Add .uf90 to Fortran file associations
+- Add .f90u to Fortran file associations
 - Use tasks.json to run uf90-sync
 
 **Vim:**
 ```vim
 " Add to .vimrc
-autocmd BufWritePost *.uf90 !uf90-sync
+autocmd BufWritePost *.f90u !uf90-sync
 ```
 
 **Emacs:**

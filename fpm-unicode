@@ -1,0 +1,134 @@
+#!/usr/bin/env bash
+# ==============================================================================
+# fpm-unicode - Wrapper do FPM com suporte automático a Unicode
+# ==============================================================================
+# Este script executa automaticamente uf90-sync antes de chamar o FPM,
+# garantindo que todos os arquivos .f90u sejam traduzidos para .f90
+# antes da compilação.
+#
+# Uso:
+#   fpm-unicode build              # Traduz + compila
+#   fpm-unicode run                # Traduz + executa
+#   fpm-unicode test               # Traduz + testa
+#   fpm-unicode <qualquer-comando-fpm>
+# ==============================================================================
+
+set -e  # Para no primeiro erro
+
+# Cores para output
+if [ -t 1 ]; then
+    BLUE='\033[0;34m'
+    GREEN='\033[0;32m'
+    YELLOW='\033[1;33m'
+    NC='\033[0m'
+else
+    BLUE=''
+    GREEN=''
+    YELLOW=''
+    NC=''
+fi
+
+# ==============================================================================
+# FUNÇÕES
+# ==============================================================================
+
+print_header() {
+    echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${BLUE}  fpm-unicode: $1${NC}"
+    echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+}
+
+print_success() {
+    echo -e "${GREEN}✓${NC} $1"
+}
+
+print_info() {
+    echo -e "${YELLOW}ℹ${NC} $1"
+}
+
+# ==============================================================================
+# VERIFICAÇÕES
+# ==============================================================================
+
+# Verifica se estamos em um projeto FPM
+if [ ! -f "fpm.toml" ]; then
+    echo "Erro: fpm.toml não encontrado"
+    echo "Execute dentro de um projeto FPM"
+    exit 1
+fi
+
+# Verifica se FPM está instalado
+if ! command -v fpm &> /dev/null; then
+    echo "Erro: FPM não encontrado"
+    echo "Instale: https://fpm.fortran-lang.org/install/"
+    exit 1
+fi
+
+# Verifica se uf90-sync está disponível
+if ! command -v uf90-sync &> /dev/null; then
+    echo "Aviso: uf90-sync não encontrado no PATH"
+    echo "Tentando executar diretamente..."
+    
+    # Tenta encontrar no diretório local
+    if [ -x "./uf90-sync" ]; then
+        UF90_SYNC="./uf90-sync"
+    elif [ -x "$HOME/.local/bin/uf90-sync" ]; then
+        UF90_SYNC="$HOME/.local/bin/uf90-sync"
+    else
+        echo "Erro: uf90-sync não encontrado"
+        echo "Compile e instale primeiro: fpm install --prefix ~/.local"
+        exit 1
+    fi
+else
+    UF90_SYNC="uf90-sync"
+fi
+
+# ==============================================================================
+# WORKFLOW PRINCIPAL
+# ==============================================================================
+
+print_header "Unicode to ASCII Translation"
+
+# Executa uf90-sync
+echo "Sincronizando arquivos .f90u..."
+if $UF90_SYNC; then
+    print_success "Tradução concluída"
+else
+    echo "Erro na tradução"
+    exit 1
+fi
+
+echo
+
+# ==============================================================================
+# EXECUTA FPM
+# ==============================================================================
+
+print_header "FPM: $*"
+
+# Passa todos os argumentos para o FPM
+fpm "$@"
+
+FPM_EXIT=$?
+
+echo
+
+if [ $FPM_EXIT -eq 0 ]; then
+    print_success "Comando FPM concluído com sucesso"
+else
+    echo "Erro no comando FPM (código: $FPM_EXIT)"
+    exit $FPM_EXIT
+fi
+
+# ==============================================================================
+# ESTATÍSTICAS (opcional)
+# ==============================================================================
+
+# Conta arquivos .f90u e .f90
+F90U_COUNT=$(find src app test -name "*.f90u" 2>/dev/null | wc -l)
+F90_COUNT=$(find src app test -name "*.f90" 2>/dev/null | grep -v "\.mod\." | wc -l)
+
+if [ $F90U_COUNT -gt 0 ]; then
+    echo
+    print_info "Arquivos .f90u: $F90U_COUNT | Arquivos .f90 gerados: $F90_COUNT"
+fi

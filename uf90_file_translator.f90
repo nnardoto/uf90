@@ -194,8 +194,9 @@ contains
             token_end = token_end + 1
           end do
           
-          ! Extrai token (usa min para garantir que não passa do fim)
-          token = line(i:min(token_end-1, line_length))
+          ! Extrai token (garante que não passa do fim)
+          if (token_end > line_length + 1) token_end = line_length + 1
+          token = line(i:token_end-1)
           
           ! Valida token
           call check_reserved_ascii_token(token, token_is_valid)
@@ -295,8 +296,9 @@ contains
             identifier_end = identifier_end + 1
           end do
           
-          ! Extrai identificador
-          identifier = line(i:min(identifier_end-1, line_length))
+          ! Extrai identificador (garante limites corretos)
+          if (identifier_end > line_length + 1) identifier_end = line_length + 1
+          identifier = line(i:identifier_end-1)
           
           ! Traduz e adiciona ao acumulador
           accumulator = accumulator // translate_identifier(identifier)

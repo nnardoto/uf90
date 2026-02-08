@@ -79,7 +79,7 @@ fpm install --prefix ~/.local
 **Python:**
 ```bash
 cd python
-python3 unicode_fortran_refactored.py ../examples/exemplo.uf90
+python3 unicode_fortran_refactored.py ../examples/exemplo.f90u
 python3 unicode_fortran_refactored.py --help
 ```
 

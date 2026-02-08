@@ -1,12 +1,12 @@
 ! ============================================================================
 ! Programa: uf90_sync
 ! ============================================================================
-! Sincroniza arquivos .uf90 com seus equivalentes .f90 traduzidos.
+! Sincroniza arquivos .f90u com seus equivalentes .f90 traduzidos.
 !
 ! Este programa:
 ! 1. Busca a raiz do projeto fpm (localiza fpm.toml)
-! 2. Procura todos os arquivos .uf90 em src/, app/, test/
-! 3. Para cada .uf90 que mudou desde a última tradução:
+! 2. Procura todos os arquivos .f90u em src/, app/, test/
+! 3. Para cada .f90u que mudou desde a última tradução:
 !    - Valida que não usa identificadores reservados
 !    - Traduz letras gregas Unicode para nomes ASCII
 !    - Gera .f90 correspondente
@@ -55,7 +55,7 @@ program uf90_sync
     stop 2
   end if
   
-  ! Sincroniza todos os arquivos .uf90
+  ! Sincroniza todos os arquivos .f90u
   call synchronize_all_files(project_root, exit_code)
   
   ! Retorna código de saída apropriado
@@ -112,11 +112,11 @@ contains
   ! ==========================================================================
   ! SUBROTINA: synchronize_all_files
   ! ==========================================================================
-  ! Sincroniza todos os arquivos .uf90 encontrados no projeto.
+  ! Sincroniza todos os arquivos .f90u encontrados no projeto.
   !
   ! Processo:
   ! 1. Muda para diretório raiz do projeto
-  ! 2. Lista todos os .uf90 em src/, app/, test/
+  ! 2. Lista todos os .f90u em src/, app/, test/
   ! 3. Para cada arquivo, verifica se precisa regenerar
   ! 4. Regenera arquivos modificados
   ! 5. Volta ao diretório original
@@ -143,7 +143,7 @@ contains
     ! Muda para raiz do projeto
     call set_cwd(root)
     
-    ! === ETAPA 1: Coleta lista de arquivos .uf90 ===
+    ! === ETAPA 1: Coleta lista de arquivos .f90u ===
     file_list = ""
     
     do i = 1, size(FPM_DIRS)
@@ -155,7 +155,7 @@ contains
     
     ! Nenhum arquivo encontrado?
     if (len_trim(file_list) == 0) then
-      write(*,'(a)') "[uf90] Nenhum arquivo .uf90 encontrado"
+      write(*,'(a)') "[uf90] Nenhum arquivo .f90u encontrado"
       call set_cwd(original_dir)
       return
     end if
@@ -177,7 +177,7 @@ contains
   ! ==========================================================================
   ! FUNÇÃO: list_uf90_files
   ! ==========================================================================
-  ! Lista todos os arquivos .uf90 em um diretório (recursivamente).
+  ! Lista todos os arquivos .f90u em um diretório (recursivamente).
   !
   ! Usa o comando Unix 'find' para buscar arquivos.
   !
@@ -192,9 +192,9 @@ contains
     character(len=:), allocatable :: file_list
     type(process_type) :: process
     
-    ! Executa find para buscar .uf90 recursivamente
+    ! Executa find para buscar .f90u recursivamente
     process = run( &
-      "find " // trim(directory) // " -type f -name '*.uf90' -print", &
+      "find " // trim(directory) // " -type f -name '*.f90u' -print", &
       want_stdout=.true. &
     )
     
@@ -251,7 +251,7 @@ contains
       
       ! Determina nomes dos arquivos
       uf90_file = line
-      f90_file = replace_file_suffix(uf90_file, ".uf90", ".f90")
+      f90_file = replace_file_suffix(uf90_file, ".f90u", ".f90")
       
       ! Verifica se precisa regenerar
       if (file_needs_regeneration(uf90_file, f90_file)) then
@@ -277,10 +277,10 @@ contains
   !
   ! Critérios:
   ! 1. .f90 não existe → precisa gerar
-  ! 2. .uf90 é mais recente que .f90 → precisa regenerar
+  ! 2. .f90u é mais recente que .f90 → precisa regenerar
   !
   ! Parâmetros:
-  !   uf90_path : Arquivo fonte .uf90
+  !   uf90_path : Arquivo fonte .f90u
   !   f90_path  : Arquivo gerado .f90
   !
   ! Retorna:
@@ -303,7 +303,7 @@ contains
       exitstat=shell_status &
     )
     
-    ! Status 0 = .uf90 é mais novo
+    ! Status 0 = .f90u é mais novo
     file_needs_regeneration = (shell_status == 0)
     
   end function file_needs_regeneration
@@ -313,7 +313,7 @@ contains
   ! ==========================================================================
   ! Substitui sufixo de nome de arquivo.
   !
-  ! Exemplo: replace_file_suffix("test.uf90", ".uf90", ".f90") → "test.f90"
+  ! Exemplo: replace_file_suffix("test.f90u", ".f90u", ".f90") → "test.f90"
   !
   ! Parâmetros:
   !   path        : Caminho original

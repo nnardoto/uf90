@@ -1,0 +1,243 @@
+# ==============================================================================
+# .gitignore para uf90 - Unicode Fortran Translator
+# ==============================================================================
+
+# ==============================================================================
+# FPM (Fortran Package Manager)
+# ==============================================================================
+build/
+*.mod
+*.smod
+
+# ==============================================================================
+# Arquivos .f90 GERADOS (importante!)
+# ==============================================================================
+# Decisão: Commitar ou ignorar os .f90 gerados?
+#
+# OPÇÃO 1: Ignorar .f90 gerados (recomendado para desenvolvimento)
+#   - Mantém repositório limpo
+#   - Força uso do uf90-sync
+#   - Descomente as linhas abaixo:
+
+# src/**/*.f90
+# app/**/*.f90
+# test/**/*.f90
+
+# OPÇÃO 2: Commitar .f90 gerados (recomendado para distribuição)
+#   - Usuários podem compilar sem uf90-sync
+#   - Útil para releases
+#   - Deixe as linhas acima comentadas (padrão atual)
+
+# Nota: Arquivos .f90 com marca de geração podem ser identificados com:
+#   grep -l "GENERATED FROM .f90u" src/**/*.f90
+
+# ==============================================================================
+# Compilação Fortran
+# ==============================================================================
+# Arquivos objeto
+*.o
+*.obj
+
+# Arquivos de módulo
+*.mod
+*.smod
+
+# Arquivos de biblioteca
+*.a
+*.lib
+*.so
+*.dylib
+*.dll
+
+# Executáveis
+*.exe
+*.out
+a.out
+
+# Arquivos de debug
+*.dSYM/
+
+# ==============================================================================
+# Python
+# ==============================================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Ambientes virtuais
+venv/
+env/
+ENV/
+.venv
+
+# Distribuição Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# ==============================================================================
+# Arquivos de Editor/IDE
+# ==============================================================================
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# IntelliJ / PyCharm
+.idea/
+*.iml
+
+# Vim
+*.swp
+*.swo
+*~
+.*.sw[a-p]
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Atom
+.atom/
+
+# Kate
+.kate-swp
+
+# ==============================================================================
+# Sistema Operacional
+# ==============================================================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+.directory
+.Trash-*
+
+# ==============================================================================
+# Logs e Temporários
+# ==============================================================================
+*.log
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+*.orig
+
+# Diretórios temporários
+tmp/
+temp/
+.cache/
+
+# ==============================================================================
+# Documentação Gerada
+# ==============================================================================
+# FORD (documentação Fortran)
+doc/
+docs/_build/
+site/
+
+# Doxygen
+html/
+latex/
+Doxygen.log
+
+# ==============================================================================
+# Testes e Coverage
+# ==============================================================================
+*.gcno
+*.gcda
+*.gcov
+coverage/
+.coverage
+htmlcov/
+
+# Resultados de testes
+test_output/
+*.test
+*.tst
+
+# ==============================================================================
+# Arquivos Específicos do Projeto
+# ==============================================================================
+# Tabela de mapeamento gerada (pode ser regenerada)
+unicode_mapping.txt
+
+# Arquivos de exemplo temporários
+test.f90u
+test.f90
+exemplo_test.*
+
+# ==============================================================================
+# Git
+# ==============================================================================
+*.orig
+*.rej
+*.patch
+
+# ==============================================================================
+# Arquivos de Configuração Local
+# ==============================================================================
+# Configurações locais do usuário
+.env
+.env.local
+local.mk
+
+# Configurações de compilador específicas
+compiler.mk
+
+# ==============================================================================
+# CI/CD
+# ==============================================================================
+.github/workflows/*.disabled
+
+# ==============================================================================
+# Arquivos de Package Manager
+# ==============================================================================
+# Conda
+*.conda
+.conda/
+
+# Spack
+.spack/
+
+# ==============================================================================
+# Específico: Arquivos de Backup do Editor
+# ==============================================================================
+# Backup automático do uf90_file_translator
+src/uf90_file_translator.f90.backup
+
+# ==============================================================================
+# Notas para Contribuidores
+# ==============================================================================
+#
+# Arquivos que DEVEM ser commitados:
+#   ✓ src/**/*.f90u        - Código fonte Unicode (SEMPRE)
+#   ✓ src/**/*.f90         - Código gerado (OPCIONAL, veja acima)
+#   ✓ README.md            - Documentação
+#   ✓ fpm.toml             - Configuração FPM
+#   ✓ install.sh           - Script de instalação
+#   ✓ fpm-unicode          - Wrapper shell
+#   ✓ examples/*.f90u      - Exemplos
+#
+# Arquivos que NÃO devem ser commitados:
+#   ✗ build/               - Artifacts de compilação
+#   ✗ *.mod                - Módulos compilados
+#   ✗ test.f90u            - Arquivos de teste temporários
+#   ✗ .vscode/             - Configurações pessoais do editor
+#
+# ==============================================================================
