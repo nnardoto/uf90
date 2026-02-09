@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "uf90"
+version = "3.1.0"
+description = "Unicode Fortran Translator (.f90u -> .f90)"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [{name="nnardoto"}]
+dependencies = []
+
+[project.scripts]
+uf90 = "uf90.cli:main"
+
+# Optional aliases (compatibility)
+uf90-sync = "uf90.cli:main_sync_compat"
+uf90-translate = "uf90.cli:main_translate_compat"
+fpm-unicode = "uf90.cli:main_fpm_compat"
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
