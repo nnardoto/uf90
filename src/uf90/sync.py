@@ -12,7 +12,7 @@ class SyncOptions:
     extensions: tuple[str, ...] = (".f90u",)
     manifest_name: str = ".uf90-manifest.json"
     dry_run: bool = False
-    check: bool = False  # se True: não escreve nada, apenas verifica desatualizados
+    check: bool = False
     preserve_comments: bool = True
 
 
@@ -47,7 +47,7 @@ def sync_project(root: Path, opt: SyncOptions = SyncOptions()) -> int:
         sha = file_sha256(p)
 
         if manifest.get(rel) == sha:
-            continue  # não mudou desde a última sync bem-sucedida
+            continue
 
         out = p.with_suffix(".f90")
         changed += 1

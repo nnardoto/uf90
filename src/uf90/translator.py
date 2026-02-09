@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 import hashlib
+import re
 
 from .mapping import GREEK, SUBS, SUPS, is_fortran_ident_char, reserved_ascii_names
 
@@ -11,6 +12,10 @@ from .mapping import GREEK, SUBS, SUPS, is_fortran_ident_char, reserved_ascii_na
 class TranslateOptions:
     preserve_comments: bool = True
     uc_prefix: str = "uc_"
+
+
+# Token simples de identificador Fortran (prático):
+_IDENT = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
 
 
 def _split_comment(line: str) -> tuple[str, str]:
@@ -28,6 +33,7 @@ def _translate_identifier_fragment(s: str, opt: TranslateOptions) -> str:
 
         if ch in GREEK:
             name = GREEK[ch]
+            # se não estamos "dentro" de um identificador, prefixa com uc_
             if out and is_fortran_ident_char(out[-1][-1:]):
                 out.append(name)
             else:
@@ -61,17 +67,18 @@ def translate_text(text: str, opt: TranslateOptions = TranslateOptions()) -> str
     lines = text.splitlines(keepends=True)
     out_lines: list[str] = []
 
-    bad = reserved_ascii_names()
+    # Checa apenas tokens (evita falso positivo por substring)
+    bad = {x.lower() for x in reserved_ascii_names()}
 
     for line in lines:
         code, comment = _split_comment(line) if opt.preserve_comments else (line, "")
         new_code = _translate_identifier_fragment(code, opt)
 
-        for name in bad:
-            if name in code:
+        for tok in _IDENT.findall(code):
+            if tok.lower() in bad:
                 raise ValueError(
-                    f"Identificador ASCII reservado encontrado no fonte unicode: '{name}'. "
-                    "Use o símbolo Unicode (ex: α) no .f90u."
+                    f"Identificador ASCII reservado encontrado no fonte unicode: '{tok}'. "
+                    "Use o símbolo Unicode correspondente ou renomeie o identificador."
                 )
 
         out_lines.append(new_code + comment)

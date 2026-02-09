@@ -29,5 +29,8 @@ def is_fortran_ident_char(ch: str) -> bool:
     return ch.isalnum() or ch == "_"
 
 def reserved_ascii_names() -> set[str]:
-    base = set(GREEK.values())
-    return base | {f"uc_{x}" for x in base}
+    # Reservamos APENAS os identificadores que o uf90 gera diretamente quando um
+    # identificador "começa" com símbolo grego (ex.: α -> uc_alpha).
+    # Isso evita falsos positivos como "AtomNumber" conter "Nu" como substring.
+    base = {x.lower() for x in GREEK.values()}
+    return {f"uc_{x}" for x in base}

@@ -50,7 +50,6 @@ def _cmd_fpm(ns: argparse.Namespace) -> int:
         print("uf90 fpm: 'fpm' não encontrado no PATH", file=sys.stderr)
         return 127
 
-    # sempre faz sync (incremental)
     sync_opt = SyncOptions(
         manifest_name=ns.manifest,
         dry_run=False,
@@ -72,7 +71,6 @@ def build_parser() -> argparse.ArgumentParser:
 
     sub = ap.add_subparsers(dest="cmd", required=True)
 
-    # sync / check
     sp = sub.add_parser("sync", help="Sincroniza/gera .f90 a partir de .f90u (incremental).")
     sp.add_argument("root", nargs="?", type=Path, default=Path("."))
     sp.add_argument("--manifest", default=".uf90-manifest.json")
@@ -89,14 +87,12 @@ def build_parser() -> argparse.ArgumentParser:
     spc.add_argument("--no-preserve-comments", action="store_true")
     spc.set_defaults(_fn=_cmd_sync, dry_run=False, check=True)
 
-    # translate
     tp = sub.add_parser("translate", help="Converte um arquivo .f90u em .f90.")
     tp.add_argument("src", type=Path)
     tp.add_argument("-o", "--out", type=Path, default=None)
     tp.add_argument("--no-preserve-comments", action="store_true")
     tp.set_defaults(_fn=_cmd_translate)
 
-    # fpm wrapper
     fp = sub.add_parser("fpm", help="Roda 'sync' e depois chama o fpm com os argumentos fornecidos.")
     fp.add_argument("--root", type=Path, default=Path("."))
     fp.add_argument("--manifest", default=".uf90-manifest.json")
@@ -113,10 +109,7 @@ def main(argv: list[str] | None = None) -> int:
     return ns._fn(ns)
 
 
-# --- Compatibility entrypoints (opcionais) ---
-
 def main_sync_compat(argv: list[str] | None = None) -> int:
-    # mantém o comportamento do binário antigo: uf90-sync [root]
     return main(["sync", *(argv or [])])
 
 def main_translate_compat(argv: list[str] | None = None) -> int:
