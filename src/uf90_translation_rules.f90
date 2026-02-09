@@ -89,16 +89,24 @@ contains
     ! Comprimento da chave Unicode encontrada
     integer :: key_length
     
+    ! String temporária para processar subscritos
+    character(len=:), allocatable :: temp_ident
+    
+    ! ETAPA 1: Processar subscritos consecutivos PRIMEIRO
+    ! Exemplo: x₁₂ → x_12 (não x_1_2)
+    temp_ident = process_consecutive_subscripts(ident)
+    
+    ! ETAPA 2: Processar letras gregas e outros símbolos
     ! Inicializa acumulador vazio
     acc = ""
-    n = len_trim(ident)
+    n = len_trim(temp_ident)
     i = 1
     
     ! Loop principal: processa cada posição do identificador
     do while (i <= n)
       
       ! Tenta encontrar letra grega na posição atual
-      if (match_greek_at(ident, i, greek_replacement, key_length)) then
+      if (match_greek_at(temp_ident, i, greek_replacement, key_length)) then
         
         ! === ANÁLISE DE CONTEXTO: Inserção automática de underscores ===
         !
@@ -116,10 +124,10 @@ contains
         next_char = achar(0)  ! null char (indica fim de string)
         
         ! Pega caractere anterior se existir
-        if (i > 1) prev_char = ident(i-1:i-1)
+        if (i > 1) prev_char = temp_ident(i-1:i-1)
         
         ! Pega caractere seguinte se existir
-        if (i + key_length <= n) next_char = ident(i+key_length:i+key_length)
+        if (i + key_length <= n) next_char = temp_ident(i+key_length:i+key_length)
         
         ! --- Undercore ANTES (se necessário) ---
         ! Insere underscore se:
@@ -147,7 +155,7 @@ contains
         
       else
         ! Não é letra grega, copia caractere normalmente
-        acc = acc // ident(i:i)
+        acc = acc // temp_ident(i:i)
         i = i + 1
       end if
       
@@ -271,11 +279,164 @@ contains
     if (starts_with(s, pos, "ω")) then; repl="omega";   keylen=len("ω"); return; end if
     
     ! Nenhuma letra grega encontrada
+    ! Nota: Subscritos e sobrescritos são processados ANTES pela função
+    ! process_consecutive_subscripts, então não chegam aqui
     match_greek_at = .false.
     repl = ""
     keylen = 0
     
   end function match_greek_at
+  
+  ! ==========================================================================
+  ! FUNÇÃO: process_consecutive_subscripts
+  ! ==========================================================================
+  ! Processa subscritos consecutivos em um identificador.
+  !
+  ! Exemplo: α₁₂ → α_12 (não α_1_2)
+  !
+  ! Algoritmo:
+  ! 1. Busca sequências de subscritos Unicode consecutivos
+  ! 2. Converte para um único sufixo _N
+  !
+  ! Parâmetros:
+  !   ident : Identificador original
+  !
+  ! Retorna:
+  !   Identificador com subscritos processados
+  ! ==========================================================================
+  function process_consecutive_subscripts(ident) result(out)
+    character(len=*), intent(in) :: ident
+    character(len=:), allocatable :: out
+    
+    character(len=:), allocatable :: acc
+    integer :: i, n, j, char_len
+    character(len=20) :: digits  ! Buffer para acumular dígitos
+    integer :: digit_count
+    character(len=1) :: digit
+    logical :: found
+    
+    acc = ""
+    n = len(ident)
+    i = 1
+    
+    do while (i <= n)
+      
+      ! Verifica se é início de sequência de subscritos
+      if (is_subscript_at(ident, i, digit, char_len)) then
+        ! Coleta todos os subscritos consecutivos
+        digits = ""
+        digit_count = 0
+        j = i
+        
+        do while (j <= n)
+          if (is_subscript_at(ident, j, digit, char_len)) then
+            digit_count = digit_count + 1
+            digits(digit_count:digit_count) = digit
+            j = j + char_len
+          else
+            exit
+          end if
+        end do
+        
+        ! Adiciona como _N (sem underscore entre dígitos)
+        acc = trim(acc) // "_" // digits(1:digit_count)
+        i = j
+        
+      ! Verifica se é sobrescrito
+      else if (is_superscript_at(ident, i, digit, char_len)) then
+        ! Coleta todos os sobrescritos consecutivos  
+        digits = ""
+        digit_count = 0
+        j = i
+        
+        do while (j <= n)
+          if (is_superscript_at(ident, j, digit, char_len)) then
+            digit_count = digit_count + 1
+            digits(digit_count:digit_count) = digit
+            j = j + char_len
+          else
+            exit
+          end if
+        end do
+        
+        ! Adiciona como _pN (p = power/superscript)
+        acc = trim(acc) // "_p" // digits(1:digit_count)
+        i = j
+        
+      else
+        ! Caractere normal, copia byte por byte
+        ! Precisa lidar com UTF-8 multi-byte
+        acc = trim(acc) // ident(i:i)
+        i = i + 1
+      end if
+    end do
+    
+    out = acc
+    
+  end function process_consecutive_subscripts
+  
+  ! ==========================================================================
+  ! FUNÇÃO: is_subscript_at
+  ! ==========================================================================
+  ! Verifica se há um subscrito na posição especificada.
+  ! Retorna o dígito correspondente e o tamanho do caractere UTF-8.
+  ! ==========================================================================
+  function is_subscript_at(s, pos, digit, char_len) result(found)
+    character(len=*), intent(in) :: s
+    integer, intent(in) :: pos
+    character(len=1), intent(out) :: digit
+    integer, intent(out) :: char_len
+    logical :: found
+    
+    found = .true.
+    
+    if (starts_with(s, pos, "₀")) then; digit="0"; char_len=len("₀"); return; end if
+    if (starts_with(s, pos, "₁")) then; digit="1"; char_len=len("₁"); return; end if
+    if (starts_with(s, pos, "₂")) then; digit="2"; char_len=len("₂"); return; end if
+    if (starts_with(s, pos, "₃")) then; digit="3"; char_len=len("₃"); return; end if
+    if (starts_with(s, pos, "₄")) then; digit="4"; char_len=len("₄"); return; end if
+    if (starts_with(s, pos, "₅")) then; digit="5"; char_len=len("₅"); return; end if
+    if (starts_with(s, pos, "₆")) then; digit="6"; char_len=len("₆"); return; end if
+    if (starts_with(s, pos, "₇")) then; digit="7"; char_len=len("₇"); return; end if
+    if (starts_with(s, pos, "₈")) then; digit="8"; char_len=len("₈"); return; end if
+    if (starts_with(s, pos, "₉")) then; digit="9"; char_len=len("₉"); return; end if
+    
+    found = .false.
+    digit = ""
+    char_len = 0
+    
+  end function is_subscript_at
+  
+  ! ==========================================================================
+  ! FUNÇÃO: is_superscript_at  
+  ! ==========================================================================
+  ! Verifica se há um sobrescrito na posição especificada.
+  ! ==========================================================================
+  function is_superscript_at(s, pos, digit, char_len) result(found)
+    character(len=*), intent(in) :: s
+    integer, intent(in) :: pos
+    character(len=1), intent(out) :: digit
+    integer, intent(out) :: char_len
+    logical :: found
+    
+    found = .true.
+    
+    if (starts_with(s, pos, "⁰")) then; digit="0"; char_len=len("⁰"); return; end if
+    if (starts_with(s, pos, "¹")) then; digit="1"; char_len=len("¹"); return; end if
+    if (starts_with(s, pos, "²")) then; digit="2"; char_len=len("²"); return; end if
+    if (starts_with(s, pos, "³")) then; digit="3"; char_len=len("³"); return; end if
+    if (starts_with(s, pos, "⁴")) then; digit="4"; char_len=len("⁴"); return; end if
+    if (starts_with(s, pos, "⁵")) then; digit="5"; char_len=len("⁵"); return; end if
+    if (starts_with(s, pos, "⁶")) then; digit="6"; char_len=len("⁶"); return; end if
+    if (starts_with(s, pos, "⁷")) then; digit="7"; char_len=len("⁷"); return; end if
+    if (starts_with(s, pos, "⁸")) then; digit="8"; char_len=len("⁸"); return; end if
+    if (starts_with(s, pos, "⁹")) then; digit="9"; char_len=len("⁹"); return; end if
+    
+    found = .false.
+    digit = ""
+    char_len = 0
+    
+  end function is_superscript_at
 
   ! ==========================================================================
   ! SUBROTINA: check_reserved_ascii_token
