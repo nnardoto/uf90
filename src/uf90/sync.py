@@ -46,10 +46,13 @@ def sync_project(root: Path, opt: SyncOptions = SyncOptions()) -> int:
         rel = str(p.relative_to(root))
         sha = file_sha256(p)
 
-        if manifest.get(rel) == sha:
+        out = p.with_suffix(".f90")
+
+        # O hash da entrada sozinho não basta: a saída pode ter sido apagada
+        # por um clean, checkout ou pelo usuário.
+        if manifest.get(rel) == sha and out.is_file():
             continue
 
-        out = p.with_suffix(".f90")
         changed += 1
 
         if opt.dry_run or opt.check:

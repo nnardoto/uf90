@@ -1,0 +1,16 @@
+module kinematics
+  implicit none
+  private
+  public :: advance
+
+contains
+
+  pure subroutine advance(x, v, a, Δt)
+    real, intent(inout) :: x, v
+    real, intent(in) :: a, Δt
+
+    x = x + v * Δt + 0.5 * a * Δt * Δt
+    v = v + a * Δt
+  end subroutine advance
+
+end module kinematics

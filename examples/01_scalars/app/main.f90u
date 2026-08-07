@@ -1,0 +1,12 @@
+program scalars
+  implicit none
+
+  real :: α, β, γ
+
+  α = 2.0
+  β = 3.0
+  γ = α + β
+
+  if (abs(γ - 5.0) > 1.0e-6) error stop "soma incorreta"
+  print *, "α + β =", γ
+end program scalars

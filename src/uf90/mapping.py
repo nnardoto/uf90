@@ -16,8 +16,19 @@ GREEK = {
 }
 
 SUBS = {
+    # digits
     "₀": "0", "₁": "1", "₂": "2", "₃": "3", "₄": "4",
     "₅": "5", "₆": "6", "₇": "7", "₈": "8", "₉": "9",
+    # Latin letters for which Unicode defines a subscript character. Unicode
+    # does not provide a complete subscript alphabet (there is no Latin b, c,
+    # d, f, g, q, w, y or z, for example).
+    "ₐ": "a", "ₑ": "e", "ₔ": "schwa", "ₕ": "h", "ᵢ": "i", "ⱼ": "j",
+    "ₖ": "k", "ₗ": "l", "ₘ": "m", "ₙ": "n", "ₒ": "o",
+    "ₚ": "p", "ᵣ": "r", "ₛ": "s", "ₜ": "t", "ᵤ": "u",
+    "ᵥ": "v", "ₓ": "x",
+    # Scientific notation also commonly uses the available Greek subscript
+    # modifier letters.
+    "ᵦ": "beta", "ᵧ": "gamma", "ᵨ": "rho", "ᵩ": "phi", "ᵪ": "chi",
 }
 
 SUPS = {

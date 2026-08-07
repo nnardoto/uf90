@@ -1,0 +1,21 @@
+module statistics
+  implicit none
+  private
+  public :: statistics_t, summarize
+
+  type :: statistics_t
+    real :: μ = 0.0
+    real :: σ² = 0.0
+  end type statistics_t
+
+contains
+
+  pure function summarize(x) result(summary)
+    real, intent(in) :: x(:)
+    type(statistics_t) :: summary
+
+    summary%μ = sum(x) / real(size(x))
+    summary%σ² = sum((x - summary%μ)**2) / real(size(x))
+  end function summarize
+
+end module statistics

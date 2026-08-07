@@ -1,0 +1,7 @@
+name = "uf90_example_03_literals"
+version = "0.1.0"
+
+[build]
+auto-executables = true
+auto-tests = false
+auto-examples = false

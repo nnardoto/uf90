@@ -14,15 +14,22 @@ class TranslateOptions:
     uc_prefix: str = "uc_"
 
 
-# Token simples de identificador Fortran (prático):
+# Token ASCII simples de identificador Fortran. Ele é usado apenas para a
+# validação dos nomes que pertencem ao namespace reservado do uf90.
 _IDENT = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
 
 
-def _split_comment(line: str) -> tuple[str, str]:
-    if "!" not in line:
-        return line, ""
-    i = line.find("!")
-    return line[:i], line[i:]
+def _is_ident_start(ch: str) -> bool:
+    return (ch.isascii() and (ch.isalpha() or ch == "_")) or ch in GREEK
+
+
+def _is_ident_char(ch: str) -> bool:
+    return (
+        (ch.isascii() and (ch.isalnum() or ch == "_"))
+        or ch in GREEK
+        or ch in SUBS
+        or ch in SUPS
+    )
 
 
 def _translate_identifier_fragment(s: str, opt: TranslateOptions) -> str:
@@ -63,6 +70,80 @@ def _translate_identifier_fragment(s: str, opt: TranslateOptions) -> str:
     return "".join(out)
 
 
+def _validate_ascii_identifier(token: str, bad: set[str]) -> None:
+    if _IDENT.fullmatch(token) and token.lower() in bad:
+        raise ValueError(
+            f"Identificador ASCII reservado encontrado no fonte unicode: '{token}'. "
+            "Use o símbolo Unicode correspondente ou renomeie o identificador."
+        )
+
+
+def _translate_line(
+    line: str,
+    opt: TranslateOptions,
+    bad: set[str],
+    quote: str | None,
+) -> tuple[str, str | None]:
+    """Translate identifiers while leaving character literals untouched.
+
+    ``quote`` carries a continued Fortran character literal from the previous
+    physical line. Comments are recognized only outside character literals, so
+    an exclamation mark inside a string does not truncate the source line.
+    """
+
+    out: list[str] = []
+    i = 0
+
+    while i < len(line):
+        ch = line[i]
+
+        if quote is not None:
+            out.append(ch)
+            if ch == quote:
+                # Fortran escapes a quote by doubling it.
+                if i + 1 < len(line) and line[i + 1] == quote:
+                    out.append(line[i + 1])
+                    i += 2
+                    continue
+                quote = None
+            i += 1
+            continue
+
+        if ch in ("'", '"'):
+            quote = ch
+            out.append(ch)
+            i += 1
+            continue
+
+        if ch == "!":
+            if opt.preserve_comments:
+                out.append(line[i:])
+            else:
+                out.append(_translate_identifier_fragment(line[i:], opt))
+            break
+
+        if _is_ident_start(ch):
+            end = i + 1
+            while end < len(line) and _is_ident_char(line[end]):
+                end += 1
+            token = line[i:end]
+            _validate_ascii_identifier(token, bad)
+            out.append(_translate_identifier_fragment(token, opt))
+            i = end
+            continue
+
+        out.append(ch)
+        i += 1
+
+    # A valid continued character literal ends the physical line with '&'. If
+    # it does not, reset the state so a malformed line cannot hide the rest of
+    # the file from translation and validation.
+    if quote is not None and not line.rstrip("\r\n").rstrip().endswith("&"):
+        quote = None
+
+    return "".join(out), quote
+
+
 def translate_text(text: str, opt: TranslateOptions = TranslateOptions()) -> str:
     lines = text.splitlines(keepends=True)
     out_lines: list[str] = []
@@ -70,18 +151,10 @@ def translate_text(text: str, opt: TranslateOptions = TranslateOptions()) -> str
     # Checa apenas tokens (evita falso positivo por substring)
     bad = {x.lower() for x in reserved_ascii_names()}
 
+    quote: str | None = None
     for line in lines:
-        code, comment = _split_comment(line) if opt.preserve_comments else (line, "")
-        new_code = _translate_identifier_fragment(code, opt)
-
-        for tok in _IDENT.findall(code):
-            if tok.lower() in bad:
-                raise ValueError(
-                    f"Identificador ASCII reservado encontrado no fonte unicode: '{tok}'. "
-                    "Use o símbolo Unicode correspondente ou renomeie o identificador."
-                )
-
-        out_lines.append(new_code + comment)
+        translated, quote = _translate_line(line, opt, bad, quote)
+        out_lines.append(translated)
 
     return "".join(out_lines)
 

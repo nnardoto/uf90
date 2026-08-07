@@ -1,0 +1,16 @@
+program literals
+  implicit none
+
+  real :: α
+  character(len=*), parameter :: mensagem = "α! continua dentro da string"
+  character(len=*), parameter :: aspas = 'valor ''β'' literal'
+  character(len=*), parameter :: continuada = "primeira parte γ &
+    &e segunda parte δ"
+
+  α = 7.0 ! β neste comentário deve permanecer Unicode
+
+  if (index(mensagem, "α!") /= 1) error stop "string modificada"
+  if (index(aspas, "β") == 0) error stop "aspas modificadas"
+  if (index(continuada, "δ") == 0) error stop "continuação modificada"
+  print *, mensagem, "; valor =", α
+end program literals

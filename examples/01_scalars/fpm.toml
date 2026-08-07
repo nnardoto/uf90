@@ -1,0 +1,7 @@
+name = "uf90_example_01_scalars"
+version = "0.1.0"
+
+[build]
+auto-executables = true
+auto-tests = false
+auto-examples = false

@@ -1,0 +1,24 @@
+program oscillator_example
+  use iso_fortran_env, only: real64
+  use oscillator, only: oscillator_t
+  implicit none
+
+  type(oscillator_t) :: system
+  real(real64) :: E₀, Eₙ, relative_drift
+  integer :: n
+
+  system%ω = 2.0_real64
+  system%Δt = 0.005_real64
+  system%x = 1.0_real64
+  system%v = 0.0_real64
+
+  E₀ = system%energy()
+  do n = 1, 2000
+    call system%advance()
+  end do
+  Eₙ = system%energy()
+  relative_drift = abs(Eₙ - E₀) / E₀
+
+  if (relative_drift > 0.02_real64) error stop "deriva de energia excessiva"
+  print *, "E₀ =", E₀, "Eₙ =", Eₙ, "deriva =", relative_drift
+end program oscillator_example

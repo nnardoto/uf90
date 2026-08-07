@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
+import shlex
 import shutil
 import subprocess
 import sys
@@ -61,7 +62,7 @@ def _cmd_fpm(ns: argparse.Namespace) -> int:
         print(f"uf90: synced {n} arquivo(s) antes do fpm")
 
     args = ns.fpm_args if ns.fpm_args else ["--help"]
-    print(f"uf90: executando: fpm {' '.join(args)}")
+    print(f"uf90: executando: {shlex.join([fpm, *args])}", flush=True)
     return subprocess.call([fpm, *args], cwd=str(ns.root))
 
 
@@ -110,13 +111,28 @@ def main(argv: list[str] | None = None) -> int:
 
 
 def main_sync_compat(argv: list[str] | None = None) -> int:
-    return main(["sync", *(argv or [])])
+    args = sys.argv[1:] if argv is None else argv
+    return main(["sync", *args])
+
 
 def main_translate_compat(argv: list[str] | None = None) -> int:
-    return main(["translate", *(argv or [])])
+    args = sys.argv[1:] if argv is None else argv
+    return main(["translate", *args])
+
 
 def main_fpm_compat(argv: list[str] | None = None) -> int:
-    return main(["fpm", *(argv or [])])
+    args = sys.argv[1:] if argv is None else argv
+    if not args:
+        args = ["--help"]
+    if args == ["--version"]:
+        return main(["--version"])
+    return main(["fpm", *args])
+
+
+def main_fpm_plugin(argv: list[str] | None = None) -> int:
+    """Entry point discovered by fpm as the ``uf90`` plugin."""
+
+    return main_fpm_compat(argv)
 
 
 if __name__ == "__main__":

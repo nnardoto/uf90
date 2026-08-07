@@ -1,0 +1,36 @@
+module oscillator
+  use iso_fortran_env, only: real64
+  implicit none
+  private
+  public :: oscillator_t
+
+  type :: oscillator_t
+    real(real64) :: ω = 1.0_real64
+    real(real64) :: Δt = 0.01_real64
+    real(real64) :: x = 1.0_real64
+    real(real64) :: v = 0.0_real64
+  contains
+    procedure :: advance
+    procedure :: energy
+  end type oscillator_t
+
+contains
+
+  subroutine advance(self)
+    class(oscillator_t), intent(inout) :: self
+    real(real64) :: a
+
+    a = -(self%ω * self%ω) * self%x
+    self%v = self%v + a * self%Δt
+    self%x = self%x + self%v * self%Δt
+  end subroutine advance
+
+  pure function energy(self) result(E)
+    class(oscillator_t), intent(in) :: self
+    real(real64) :: E
+
+    E = 0.5_real64 * self%v**2 &
+      + 0.5_real64 * (self%ω * self%x)**2
+  end function energy
+
+end module oscillator

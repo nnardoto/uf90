@@ -1,0 +1,22 @@
+program indices
+  implicit none
+
+  real :: x₀, x₁, x₂, xₙ
+  real :: T₁₀₀, c, c²
+  real :: Aᵢⱼ, vₙ₁
+
+  x₀ = 1.0
+  x₁ = 2.0
+  x₂ = 3.0
+  xₙ = x₂
+  T₁₀₀ = x₀ + x₁ + x₂
+  c = 4.0
+  c² = c * c
+  Aᵢⱼ = xₙ
+  vₙ₁ = Aᵢⱼ + 1.0
+
+  if (abs(T₁₀₀ - 6.0) > 1.0e-6) error stop "subscritos incorretos"
+  if (abs(c² - 16.0) > 1.0e-6) error stop "sobrescrito incorreto"
+  if (abs(vₙ₁ - 4.0) > 1.0e-6) error stop "subscrito alfanumérico incorreto"
+  print *, "T₁₀₀ =", T₁₀₀, "c² =", c², "vₙ₁ =", vₙ₁
+end program indices
