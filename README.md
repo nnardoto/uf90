@@ -1,5 +1,9 @@
 # uf90
 
+[![CI](https://github.com/nnardoto/uf90/actions/workflows/ci.yml/badge.svg)](https://github.com/nnardoto/uf90/actions/workflows/ci.yml)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+
 `uf90` traduz identificadores matemáticos escritos em arquivos `*.f90u` para
 Fortran ASCII portátil. O resultado é um arquivo `*.f90` comum, compilável com
 `fpm` e compiladores Fortran existentes.
@@ -24,10 +28,25 @@ end program physics
 
 Strings e comentários são preservados por padrão.
 
-## Instalação para desenvolvimento
+## Instalação
+
+Depois da primeira publicação no PyPI, a instalação recomendada será:
 
 ```bash
-python3 -m pip install -e .
+pipx install uf90
+```
+
+Enquanto a primeira release não estiver publicada, instale diretamente do
+GitHub:
+
+```bash
+pipx install git+https://github.com/nnardoto/uf90.git
+```
+
+Para desenvolvimento local:
+
+```bash
+python3 -m pip install -e '.[test]'
 ```
 
 A instalação fornece o comando `uf90` e o plugin `fpm-uf90`. O `fpm`
@@ -102,3 +121,8 @@ aceita as formas latinas disponíveis `ₐ ₑ ₕ ᵢ ⱼ ₖ ₗ ₘ ₙ ₒ �
 Nesta etapa o projeto é deliberadamente um tradutor fonte-a-fonte. Ele não
 introduz semântica nova na linguagem e não depende de LLVM, MLIR ou de um
 compilador específico.
+
+## Publicação
+
+O procedimento de release com PyPI Trusted Publishing está documentado em
+[`docs/RELEASING.md`](docs/RELEASING.md).

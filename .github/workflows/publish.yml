@@ -1,0 +1,80 @@
+name: Publish to PyPI
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pypi-release
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build and verify release artifacts
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out release tag
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Verify tag matches package version
+        env:
+          PYTHONPATH: src
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: >-
+          python -c "import os, uf90;
+          expected = 'v' + uf90.__version__;
+          actual = os.environ['RELEASE_TAG'];
+          raise SystemExit(0 if actual == expected else
+          f'release tag {actual!r} must equal {expected!r}')"
+
+      - name: Install packaging tools
+        run: python -m pip install --upgrade build pipx twine
+
+      - name: Build wheel and source distribution
+        run: python -m build
+
+      - name: Check distribution metadata
+        run: python -m twine check dist/*
+
+      - name: Smoke-test release wheel through pipx
+        run: |
+          PIPX_BIN_DIR="$RUNNER_TEMP/pipx-bin" pipx install dist/*.whl
+          "$RUNNER_TEMP/pipx-bin/uf90" --version
+          "$RUNNER_TEMP/pipx-bin/fpm-uf90" --version
+
+      - name: Upload distributions for publishing
+        uses: actions/upload-artifact@v7
+        with:
+          name: pypi-distributions
+          path: dist/
+          if-no-files-found: error
+
+  publish:
+    name: Publish distributions to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/uf90
+    permissions:
+      id-token: write
+
+    steps:
+      - name: Download distributions
+        uses: actions/download-artifact@v8
+        with:
+          name: pypi-distributions
+          path: dist/
+
+      - name: Publish to PyPI with Trusted Publishing
+        uses: pypa/gh-action-pypi-publish@release/v1
