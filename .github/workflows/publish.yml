@@ -34,6 +34,7 @@ jobs:
           python -c "import os, uf90;
           expected = 'v' + uf90.__version__;
           actual = os.environ['RELEASE_TAG'];
+          actual = 'v' + actual[2:] if actual.startswith('v.') else actual;
           raise SystemExit(0 if actual == expected else
           f'release tag {actual!r} must equal {expected!r}')"
 
