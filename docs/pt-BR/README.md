@@ -122,11 +122,23 @@ Para uso direto ou integração com outros fluxos:
 uf90 sync [diretório]
 uf90 check [diretório]
 uf90 translate arquivo.f90u [-o arquivo.f90]
+uf90 fortls-config [diretório]
 ```
 
 `uf90 sync` usa `.uf90-manifest.json` como cache incremental. `uf90 check` não
 modifica arquivos e retorna status diferente de zero quando alguma saída
 precisa ser atualizada.
+
+## Editores
+
+Para realce de sintaxe e suporte parcial do servidor de linguagem no VS Code,
+consulte a [configuração do VS Code e fortls](editors/vscode.md). Ela inclui um
+arquivo gerado para manter a navegação nos fontes `.f90u`, em vez dos arquivos
+`.f90` derivados.
+
+Um proxy bidirecional para o fortls está sendo considerado para a versão 0.2.0.
+A [proposta de arquitetura](design/fortls-proxy-v0.2.md) registra o escopo e as
+decisões atuais; ela ainda não está implementada.
 
 ## Estado e escopo
 

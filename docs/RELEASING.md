@@ -47,9 +47,9 @@ apenas ao job isolado de publicação.
 5. Crie uma GitHub Release cuja tag seja exatamente `v<versão>`, por exemplo:
 
    ```bash
-   git tag -s v0.1.0 -m "uf90 0.1.0"
-   git push origin v0.1.0
-   gh release create v0.1.0 --verify-tag --title "uf90 0.1.0" --notes-from-tag
+   git tag -s v0.1.1 -m "uf90 0.1.1"
+   git push origin v0.1.1
+   gh release create v0.1.1 --verify-tag --title "uf90 0.1.1" --notes-from-tag
    ```
 
 6. Aprove o deploy no ambiente `pypi`, caso required reviewers estejam ativos.

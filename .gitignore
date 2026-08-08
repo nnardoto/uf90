@@ -37,6 +37,7 @@ coverage.xml
 # --- uf90 ---
 # Manifest/cache do uf90 (incremental sync)
 .uf90-manifest.json
+.uf90-fortls.json
 
 # Se você decidir que .f90 é gerado (recomendado), descomente:
 # **/*.f90
@@ -44,4 +45,3 @@ coverage.xml
 # Se você quiser ignorar também arquivos temporários/backup
 *.bak
 *.tmp
-

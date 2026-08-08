@@ -5,6 +5,15 @@ All notable changes to `uf90` are documented in this file. The project follows
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-08-07
+
+### Added
+
+- `uf90 fortls-config` command for indexing `.f90u` sources while excluding
+  only their generated `.f90` counterparts.
+- Tested VS Code and Modern Fortran setup, with current fortls limitations
+  documented explicitly.
+
 ## [0.1.0] - 2026-08-07
 
 ### Added
@@ -21,5 +30,6 @@ All notable changes to `uf90` are documented in this file. The project follows
 - Regenerate a cached output when its generated `.f90` file has been removed.
 - Forward command-line arguments from compatibility entry points.
 
-[Unreleased]: https://github.com/nnardoto/uf90/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/nnardoto/uf90/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/nnardoto/uf90/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/nnardoto/uf90/releases/tag/v0.1.0

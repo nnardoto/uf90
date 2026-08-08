@@ -89,3 +89,39 @@ jobs:
           name: python-distributions
           path: dist/
           if-no-files-found: error
+
+  fortls:
+    name: fortls compatibility
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install project and fortls
+        run: python -m pip install . fortls==3.2.2
+
+      - name: Generate sources and fortls configuration
+        run: |
+          uf90 sync examples/06_oscillator
+          uf90 fortls-config examples/06_oscillator
+
+      - name: Verify navigation stays on Unicode sources
+        working-directory: examples/06_oscillator
+        run: |
+          fortls \
+            --disable_autoupdate \
+            --config .uf90-fortls.json \
+            --debug_rootpath . \
+            --debug_definition \
+            --debug_filepath app/main.f90u \
+            --debug_line 6 \
+            --debug_char 8 \
+            --debug_full_result > fortls-result.txt
+          grep -q "src/oscillator.f90u" fortls-result.txt

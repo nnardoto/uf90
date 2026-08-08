@@ -9,11 +9,16 @@ import sys
 
 from .translator import translate_file, TranslateOptions
 from .sync import sync_project, SyncOptions
+from .editor import write_fortls_config
 from . import __version__
 
 
 def _cmd_sync(ns: argparse.Namespace) -> int:
-    exts = (".f90u",) if ns.ext is None else tuple({".f90u", *ns.ext})
+    exts = (
+        (".f90u",)
+        if ns.ext is None
+        else tuple(dict.fromkeys((".f90u", *ns.ext)))
+    )
     opt = SyncOptions(
         extensions=exts,
         manifest_name=ns.manifest,
@@ -66,6 +71,17 @@ def _cmd_fpm(ns: argparse.Namespace) -> int:
     return subprocess.call([fpm, *args], cwd=str(ns.root))
 
 
+def _cmd_fortls_config(ns: argparse.Namespace) -> int:
+    exts = (
+        (".f90u",)
+        if ns.ext is None
+        else tuple(dict.fromkeys((".f90u", *ns.ext)))
+    )
+    output = write_fortls_config(ns.root, ns.output, exts)
+    print(str(output))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(prog="uf90", description="Unicode Fortran workflow (.f90u -> .f90).")
     ap.add_argument("--version", action="version", version=f"uf90 {__version__}")
@@ -93,6 +109,15 @@ def build_parser() -> argparse.ArgumentParser:
     tp.add_argument("-o", "--out", type=Path, default=None)
     tp.add_argument("--no-preserve-comments", action="store_true")
     tp.set_defaults(_fn=_cmd_translate)
+
+    ep = sub.add_parser(
+        "fortls-config",
+        help="Gera configuração do fortls para fontes .f90u.",
+    )
+    ep.add_argument("root", nargs="?", type=Path, default=Path("."))
+    ep.add_argument("-o", "--output", type=Path, default=None)
+    ep.add_argument("--ext", action="append", default=None)
+    ep.set_defaults(_fn=_cmd_fortls_config)
 
     fp = sub.add_parser("fpm", help="Roda 'sync' e depois chama o fpm com os argumentos fornecidos.")
     fp.add_argument("--root", type=Path, default=Path("."))
