@@ -115,6 +115,10 @@ the corresponding `.f90u` source instead.
 - alphanumeric subscripts: `Eₙ` → `E_n`, `Aᵢⱼ` → `A_ij`;
 - superscripts: `c²` → `c_p2`.
 
+With `uf90-ls`, type a LaTeX-style Greek name such as `\alpha` or `\Delta` and
+accept the completion to insert `α` or `Δ`. This works in both VS Code and
+Neovim; the generated Neovim setup also maps `Ctrl+Space` to manual completion.
+
 Unicode does not provide subscript forms for every letter. The current set
 includes `ₐ ₑ ₕ ᵢ ⱼ ₖ ₗ ₘ ₙ ₒ ₚ ᵣ ₛ ₜ ᵤ ᵥ ₓ`, `ₔ`, digits, and the Greek forms
 `ᵦ ᵧ ᵨ ᵩ ᵪ`.

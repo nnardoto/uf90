@@ -68,11 +68,14 @@ Abra `examples/06_oscillator` como workspace e use os arquivos `.f90u`:
   `.f90u`;
 - faça uma alteração sem salvar e confirme que a navegação a reconhece sem
   modificar o `.f90` adjacente no disco.
+- digite `\alpha` e aceite a conclusão `α`; use `Ctrl+Space` se o menu não
+  estiver visível. Da mesma forma, `\Delta` insere `Δ`.
 
 Navegação somente para leitura, símbolos, diagnósticos e nomes Unicode no
-hover estão implementados. Autocomplete, ajuda de assinatura, rename, ações de
-código e formatação permanecem desativados até que suas edições e seu texto de
-apresentação possam ser traduzidos com segurança.
+hover estão implementados. A conclusão para inserir letras gregas é fornecida
+localmente pelo `uf90-ls`; conclusão semântica do fortls, ajuda de assinatura,
+rename, ações de código e formatação permanecem desativados até que suas
+edições e seu texto de apresentação possam ser traduzidos com segurança.
 
 Se o servidor não conectar, execute **Fortran: Restart the Fortran Language
 Server** e inspecione **View: Output → Modern Fortran**. Confirme também que

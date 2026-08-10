@@ -10,6 +10,8 @@ import sys
 import threading
 from typing import Any, BinaryIO
 
+from .lsp_types import ClientResponse
+
 
 MAX_MESSAGE_BYTES = 64 * 1024 * 1024
 
@@ -149,7 +151,9 @@ def run_proxy(
     stdin: BinaryIO | None = None,
     stdout: BinaryIO | None = None,
     env: Mapping[str, str] | None = None,
-    client_transform: Callable[[dict[str, Any]], Mapping[str, Any]] | None = None,
+    client_transform: Callable[
+        [dict[str, Any]], Mapping[str, Any] | ClientResponse
+    ] | None = None,
     server_transform: Callable[[dict[str, Any]], Mapping[str, Any]] | None = None,
 ) -> int:
     client_input = sys.stdin.buffer if stdin is None else stdin
@@ -165,10 +169,22 @@ def run_proxy(
     assert process.stdout is not None
 
     client_errors: list[Exception] = []
+    output_lock = threading.Lock()
 
     def client_to_server() -> None:
         try:
-            forward_messages(client_input, process.stdin, client_transform)
+            while True:
+                message = read_message(client_input)
+                if message is None:
+                    break
+                transformed = (
+                    client_transform(message) if client_transform else message
+                )
+                if isinstance(transformed, ClientResponse):
+                    with output_lock:
+                        write_message(client_output, transformed.message)
+                else:
+                    write_message(process.stdin, transformed)
         except Exception as exc:
             client_errors.append(exc)
         finally:
@@ -186,7 +202,15 @@ def run_proxy(
     input_thread.start()
 
     try:
-        forward_messages(process.stdout, client_output, server_transform)
+        while True:
+            message = read_message(process.stdout)
+            if message is None:
+                break
+            transformed = (
+                server_transform(message) if server_transform else message
+            )
+            with output_lock:
+                write_message(client_output, transformed)
     except Exception:
         if process.poll() is None:
             process.terminate()

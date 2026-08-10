@@ -42,6 +42,16 @@ vim.lsp.config('uf90_ls', {
   root_markers = { 'fpm.toml', '.git' },
 })
 
+vim.api.nvim_create_autocmd('LspAttach', {
+  callback = function(args)
+    local client = vim.lsp.get_client_by_id(args.data.client_id)
+    if client and client.name == 'uf90_ls' then
+      vim.lsp.completion.enable(true, client.id, args.buf, { autotrigger = true })
+      vim.keymap.set('i', '<C-Space>', vim.lsp.completion.get, { buffer = args.buf })
+    end
+  end,
+})
+
 vim.lsp.enable('uf90_ls')
 ```
 
@@ -52,6 +62,10 @@ only one language server attaches to Fortran buffers.
 
 The generated absolute path also works when Neovim does not inherit your shell
 `PATH`.
+
+In a `.f90u` buffer, type `\alpha` and select the `α` item with `Ctrl+Y`.
+Typing `\` opens the completion menu automatically; `Ctrl+Space` opens it
+manually. Uppercase commands such as `\Delta` insert uppercase Greek letters.
 
 ## Neovim 0.10
 

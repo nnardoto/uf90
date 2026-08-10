@@ -12,7 +12,7 @@ def test_detected_server_path_is_made_absolute(monkeypatch):
     )
 
     assert Path(find_uf90_ls()).is_absolute()
-    assert find_uf90_ls().endswith("tools/uf90-ls")
+    assert Path(find_uf90_ls()).parts[-2:] == ("tools", "uf90-ls")
 
 
 def test_renders_vscode_settings_with_explicit_server():
@@ -36,6 +36,8 @@ def test_renders_neovim_config_and_normalizes_windows_path():
     assert "vim.lsp.enable('uf90_ls')" in rendered
     assert "C:/Users/dev/uf90-ls.exe" in rendered
     assert "root_markers = { 'fpm.toml', '.git' }" in rendered
+    assert "vim.lsp.completion.enable(true" in rendered
+    assert "'<C-Space>'" in rendered
 
 
 def test_cli_prints_config_to_stdout(capsys):

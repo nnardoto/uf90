@@ -4,7 +4,13 @@ import sys
 
 import pytest
 
-from uf90.lsp import JsonRpcProtocolError, read_message, run_proxy, write_message
+from uf90.lsp import (
+    ClientResponse,
+    JsonRpcProtocolError,
+    read_message,
+    run_proxy,
+    write_message,
+)
 from uf90.lsp_session import (
     FULL_DOCUMENT_SYNC,
     LspSession,
@@ -54,12 +60,91 @@ def test_initialize_syncs_workspace_once_and_advertises_full_sync(tmp_path: Path
         "change": FULL_DOCUMENT_SYNC,
         "save": {"includeText": True},
     }
-    assert translated["result"]["capabilities"]["completionProvider"] is None
+    assert translated["result"]["capabilities"]["completionProvider"] == {
+        "triggerCharacters": ["\\"]
+    }
     assert translated["result"]["capabilities"]["signatureHelpProvider"] is None
     assert translated["result"]["capabilities"]["renameProvider"] is False
     assert translated["result"]["capabilities"]["codeActionProvider"] is False
     assert response["result"]["capabilities"]["textDocumentSync"] == 2
     assert session.server_to_client(response) is response
+
+
+def test_latex_completion_replaces_prefix_with_unicode(tmp_path: Path):
+    source = tmp_path / "model.f90u"
+    uri = source.as_uri()
+    session = LspSession(sync=lambda root: 0)
+    session.client_to_server(
+        notification(
+            "textDocument/didOpen",
+            {
+                "textDocument": {
+                    "uri": uri,
+                    "version": 1,
+                    "text": "😀 \\alp",
+                }
+            },
+        )
+    )
+
+    response = session.client_to_server(
+        {
+            "jsonrpc": "2.0",
+            "id": 21,
+            "method": "textDocument/completion",
+            "params": {
+                "textDocument": {"uri": uri},
+                "position": {"line": 0, "character": 7},
+            },
+        }
+    )
+
+    assert isinstance(response, ClientResponse)
+    assert response.message["id"] == 21
+    items = response.message["result"]["items"]
+    assert [item["filterText"] for item in items] == ["\\alpha"]
+    assert items[0]["label"] == "\\alpha → α"
+    assert items[0]["detail"] == "GREEK SMALL LETTER ALPHA"
+    assert items[0]["textEdit"] == {
+        "range": {
+            "start": {"line": 0, "character": 3},
+            "end": {"line": 0, "character": 7},
+        },
+        "newText": "α",
+    }
+
+
+def test_latex_completion_is_empty_without_a_backslash_prefix(tmp_path: Path):
+    source = tmp_path / "model.f90u"
+    uri = source.as_uri()
+    session = LspSession(sync=lambda root: 0)
+    session.client_to_server(
+        notification(
+            "textDocument/didOpen",
+            {
+                "textDocument": {
+                    "uri": uri,
+                    "version": 1,
+                    "text": "alpha",
+                }
+            },
+        )
+    )
+
+    response = session.client_to_server(
+        {
+            "jsonrpc": "2.0",
+            "id": 22,
+            "method": "textDocument/completion",
+            "params": {
+                "textDocument": {"uri": uri},
+                "position": {"line": 0, "character": 5},
+            },
+        }
+    )
+
+    assert isinstance(response, ClientResponse)
+    assert response.message["result"]["items"] == []
 
 
 def test_initialize_performs_real_project_sync_before_forwarding(tmp_path: Path):

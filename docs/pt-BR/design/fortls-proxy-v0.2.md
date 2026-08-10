@@ -159,10 +159,16 @@ em fontes Fortran manuais ou bibliotecas externas permanecem `.f90`.
 
 ### Marco 2: autocompletar e assinaturas
 
+A versão 0.2 oferece uma camada deliberadamente menor para entrada: o proxy
+trata localmente comandos gregos no estilo LaTeX, como `\alpha`, e devolve um
+`TextEdit` que substitui o comando por `α`. Isso não depende da identidade de
+símbolos do fortls e, portanto, é seguro nos dois editores suportados.
+
 Rótulos de sugestões, texto inserido e intervalos de `TextEdit` podem conter
 nomes ASCII gerados como `uc_alpha`. Convertê-los de volta requer um mapa de
 símbolos do projeto além dos mapas de posição. Assinaturas e o conteúdo do hover
-podem exigir a mesma conversão de apresentação.
+podem exigir a mesma conversão de apresentação. Esse autocomplete semântico
+mais amplo vindo do fortls permanece desativado.
 
 ### Marco 3: operações de edição
 

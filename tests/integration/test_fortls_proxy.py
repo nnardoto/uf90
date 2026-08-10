@@ -228,6 +228,47 @@ def test_oscillator_navigation_hover_and_unsaved_changes(tmp_path: Path):
         )
         assert unsaved_target.endswith("/src/oscillator.f90u")
 
+        completion_line = "  print *, \\alp\n"
+        completion_text = changed_text.replace(
+            "end program oscillator_example",
+            f"{completion_line}end program oscillator_example",
+        )
+        completion_line_number = completion_text[
+            : completion_text.index(completion_line)
+        ].count("\n")
+        client.send(
+            {
+                "jsonrpc": "2.0",
+                "method": "textDocument/didChange",
+                "params": {
+                    "textDocument": {"uri": main.as_uri(), "version": 3},
+                    "contentChanges": [{"text": completion_text}],
+                },
+            }
+        )
+        client.send(
+            _request(
+                6,
+                "textDocument/completion",
+                {
+                    "textDocument": {"uri": main.as_uri()},
+                    "position": {
+                        "line": completion_line_number,
+                        "character": len(completion_line.rstrip("\n")),
+                    },
+                },
+            )
+        )
+        completion_items = client.response(6)["result"]["items"]
+        alpha = next(
+            item for item in completion_items if item["filterText"] == "\\alpha"
+        )
+        assert alpha["textEdit"]["newText"] == "α"
+        assert alpha["textEdit"]["range"] == {
+            "start": {"line": completion_line_number, "character": 11},
+            "end": {"line": completion_line_number, "character": 15},
+        }
+
         client.shutdown()
     finally:
         client.close()

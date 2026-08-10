@@ -110,6 +110,11 @@ edite o fonte `.f90u` correspondente.
 - subscritos alfanuméricos: `Eₙ` → `E_n`, `Aᵢⱼ` → `A_ij`;
 - sobrescritos: `c²` → `c_p2`.
 
+Com o `uf90-ls`, digite um nome grego no estilo LaTeX, como `\alpha` ou
+`\Delta`, e aceite a conclusão para inserir `α` ou `Δ`. Isso funciona no VS
+Code e no Neovim; a configuração gerada para Neovim também associa
+`Ctrl+Space` à conclusão manual.
+
 O Unicode não oferece versões subscritas de todas as letras. O conjunto atual
 inclui `ₐ ₑ ₕ ᵢ ⱼ ₖ ₗ ₘ ₙ ₒ ₚ ᵣ ₛ ₜ ᵤ ᵥ ₓ`, `ₔ`, dígitos e as formas gregas
 `ᵦ ᵧ ᵨ ᵩ ᵪ`.

@@ -8,6 +8,7 @@ import sys
 import pytest
 
 from uf90.lsp import (
+    ClientResponse,
     JsonRpcProtocolError,
     forward_messages,
     read_message,
@@ -158,3 +159,35 @@ def test_proxy_preserves_server_exit_status(tmp_path: Path):
         stdout=BytesIO(),
         env={"UF90_FORTLS_PATH": sys.executable},
     ) == 7
+
+
+def test_proxy_can_answer_a_request_without_forwarding_it(tmp_path: Path):
+    server = tmp_path / "idle_server.py"
+    server.write_text(
+        "import sys\nsys.stdin.buffer.read()\n",
+        encoding="utf-8",
+    )
+    output = BytesIO()
+
+    assert run_proxy(
+        [str(server)],
+        stdin=BytesIO(
+            frame(
+                {
+                    "jsonrpc": "2.0",
+                    "id": 8,
+                    "method": "textDocument/completion",
+                }
+            )
+        ),
+        stdout=output,
+        env={"UF90_FORTLS_PATH": sys.executable},
+        client_transform=lambda message: ClientResponse(
+            {"jsonrpc": "2.0", "id": message["id"], "result": ["α"]}
+        ),
+    ) == 0
+    assert read_message(BytesIO(output.getvalue())) == {
+        "jsonrpc": "2.0",
+        "id": 8,
+        "result": ["α"],
+    }

@@ -5,11 +5,14 @@ from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
 import re
+import unicodedata
 from typing import Any
 from urllib.parse import urlsplit, urlunsplit
 from urllib.request import url2pathname
 
 from .lsp import JsonRpcProtocolError
+from .lsp_types import ClientResponse
+from .mapping import GREEK
 from .sync import sync_project
 from .translator import TranslationResult, translate_with_map
 
@@ -34,6 +37,10 @@ LOCATION_RESULTS = {
 }
 
 ASCII_IDENTIFIER = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
+LATEX_PREFIX = re.compile(r"\\[A-Za-z]*$")
+LATEX_SYMBOLS = tuple(
+    sorted((f"\\{name}", symbol) for symbol, name in GREEK.items())
+)
 
 
 def generated_uri(source_uri: str) -> str:
@@ -88,7 +95,9 @@ class LspSession:
         self._pending_requests: dict[str | int, PendingRequest] = {}
         self.position_encoding = "utf-16"
 
-    def client_to_server(self, message: dict[str, Any]) -> Mapping[str, Any]:
+    def client_to_server(
+        self, message: dict[str, Any]
+    ) -> Mapping[str, Any] | ClientResponse:
         method = message.get("method")
         if method == "initialize":
             return self._initialize(message)
@@ -100,6 +109,8 @@ class LspSession:
             return self._did_save(message)
         if method == "textDocument/didClose":
             return self._did_close(message)
+        if method == "textDocument/completion":
+            return self._completion(message)
         if method in POSITION_REQUESTS:
             return self._position_request(message, method)
         if method == "textDocument/documentSymbol":
@@ -147,15 +158,107 @@ class LspSession:
             "change": FULL_DOCUMENT_SYNC,
             "save": {"includeText": True},
         }
-        # These methods can return edits or generated ASCII names. Keep them
-        # disabled until their results have dedicated, lossless translators.
-        translated_capabilities["completionProvider"] = None
+        # Completion is implemented locally for LaTeX-style Unicode input.
+        # The remaining methods can return edits or generated ASCII names and
+        # stay disabled until they have dedicated, lossless translators.
+        translated_capabilities["completionProvider"] = {
+            "triggerCharacters": ["\\"],
+        }
         translated_capabilities["signatureHelpProvider"] = None
         translated_capabilities["renameProvider"] = False
         translated_capabilities["codeActionProvider"] = False
         translated_capabilities["documentFormattingProvider"] = False
         translated_capabilities["documentRangeFormattingProvider"] = False
         return translated
+
+    def _completion(self, message: dict[str, Any]) -> ClientResponse:
+        params = self._params(message)
+        text_document = self._text_document(params)
+        uri = self._string_field(text_document, "uri")
+        request_id = message.get("id")
+        if not isinstance(request_id, (str, int)) or isinstance(request_id, bool):
+            raise JsonRpcProtocolError("LSP request id must be a string or integer")
+
+        position = self._validated_position(params.get("position"))
+        items = self._latex_completions(uri, position)
+        return ClientResponse(
+            {
+                "jsonrpc": "2.0",
+                "id": request_id,
+                "result": {"isIncomplete": False, "items": items},
+            }
+        )
+
+    def _latex_completions(
+        self, uri: str, position: dict[str, int]
+    ) -> list[dict[str, Any]]:
+        if generated_uri(uri) == uri:
+            return []
+        source_map = self._translation(uri).source_map
+        line_number = position["line"]
+        try:
+            line = source_map.lines[line_number].source_text
+        except IndexError as exc:
+            raise JsonRpcProtocolError(
+                f"completion line outside source map: {line_number}"
+            ) from exc
+
+        cursor = self._lsp_units_to_index(
+            line, position["character"], self.position_encoding
+        )
+        match = LATEX_PREFIX.search(line[:cursor])
+        if match is None:
+            return []
+
+        prefix = match.group(0)
+        start_character = self._index_to_lsp_units(
+            line, match.start(), self.position_encoding
+        )
+        replacement_range = {
+            "start": {"line": line_number, "character": start_character},
+            "end": position,
+        }
+        return [
+            {
+                "label": f"{command} → {symbol}",
+                "kind": 12,
+                "detail": unicodedata.name(symbol),
+                "filterText": command,
+                "textEdit": {"range": replacement_range, "newText": symbol},
+            }
+            for command, symbol in LATEX_SYMBOLS
+            if command.startswith(prefix)
+        ]
+
+    @staticmethod
+    def _lsp_units_to_index(text: str, character: int, encoding: str) -> int:
+        if character <= 0:
+            return 0
+        units = 0
+        for index, char in enumerate(text):
+            width = LspSession._encoded_width(char, encoding)
+            if character < units + width:
+                return index
+            units += width
+            if character == units:
+                return index + 1
+        return len(text)
+
+    @staticmethod
+    def _index_to_lsp_units(text: str, index: int, encoding: str) -> int:
+        return sum(
+            LspSession._encoded_width(char, encoding) for char in text[:index]
+        )
+
+    @staticmethod
+    def _encoded_width(char: str, encoding: str) -> int:
+        if encoding == "utf-8":
+            return len(char.encode("utf-8"))
+        if encoding == "utf-16":
+            return len(char.encode("utf-16-le")) // 2
+        if encoding == "utf-32":
+            return 1
+        raise JsonRpcProtocolError(f"unsupported position encoding: {encoding}")
 
     def _initialize(self, message: dict[str, Any]) -> Mapping[str, Any]:
         self._initialize_id = message.get("id")
@@ -520,6 +623,23 @@ class LspSession:
     def _map_position(
         self, position: Any, source_document_uri: str, *, to_generated: bool
     ) -> dict[str, int]:
+        validated = self._validated_position(position)
+        line = validated["line"]
+        character = validated["character"]
+
+        source_map = self._translation(source_document_uri).source_map
+        try:
+            mapped_line, mapped_character = (
+                source_map.to_generated(line, character, self.position_encoding)
+                if to_generated
+                else source_map.to_source(line, character, self.position_encoding)
+            )
+        except ValueError as exc:
+            raise JsonRpcProtocolError(f"cannot map LSP position: {exc}") from exc
+        return {"line": mapped_line, "character": mapped_character}
+
+    @staticmethod
+    def _validated_position(position: Any) -> dict[str, int]:
         if not isinstance(position, dict):
             raise JsonRpcProtocolError("position must be an object")
         line = position.get("line")
@@ -535,17 +655,7 @@ class LspSession:
             raise JsonRpcProtocolError(
                 "position line and character must be non-negative integers"
             )
-
-        source_map = self._translation(source_document_uri).source_map
-        try:
-            mapped_line, mapped_character = (
-                source_map.to_generated(line, character, self.position_encoding)
-                if to_generated
-                else source_map.to_source(line, character, self.position_encoding)
-            )
-        except ValueError as exc:
-            raise JsonRpcProtocolError(f"cannot map LSP position: {exc}") from exc
-        return {"line": mapped_line, "character": mapped_character}
+        return {"line": line, "character": character}
 
     def _map_range(
         self, range_value: Any, source_document_uri: str, *, to_generated: bool

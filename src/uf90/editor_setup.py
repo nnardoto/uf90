@@ -39,6 +39,16 @@ vim.lsp.config('uf90_ls', {{
   root_markers = {{ 'fpm.toml', '.git' }},
 }})
 
+vim.api.nvim_create_autocmd('LspAttach', {{
+  callback = function(args)
+    local client = vim.lsp.get_client_by_id(args.data.client_id)
+    if client and client.name == 'uf90_ls' then
+      vim.lsp.completion.enable(true, client.id, args.buf, {{ autotrigger = true }})
+      vim.keymap.set('i', '<C-Space>', vim.lsp.completion.get, {{ buffer = args.buf }})
+    end
+  end,
+}})
+
 vim.lsp.enable('uf90_ls')
 """
     raise ValueError(f"unsupported editor: {editor}")
