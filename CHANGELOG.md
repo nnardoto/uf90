@@ -10,6 +10,9 @@ All notable changes to `uf90` are documented in this file. The project follows
 - Bidirectional source maps for translated text, including explicit UTF-8,
   UTF-16, and UTF-32 LSP position conversion, as the first building block of
   the `uf90-ls` proxy planned for 0.2.0.
+- `uf90-ls` executable with validated JSON-RPC framing, transparent
+  bidirectional forwarding, safe fortls executable selection, and subprocess
+  exit-status propagation.
 
 ## [0.1.1] - 2026-08-07
 

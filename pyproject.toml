@@ -41,6 +41,7 @@ test = ["pytest>=7"]
 
 [project.scripts]
 uf90 = "uf90.cli:main"
+uf90-ls = "uf90.lsp:main"
 
 # Optional aliases (compatibility)
 uf90-sync = "uf90.cli:main_sync_compat"
