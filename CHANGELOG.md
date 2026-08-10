@@ -5,6 +5,8 @@ All notable changes to `uf90` are documented in this file. The project follows
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-08-09
+
 ### Added
 
 - Bidirectional source maps for translated text, including explicit UTF-8,
@@ -56,6 +58,7 @@ All notable changes to `uf90` are documented in this file. The project follows
 - Regenerate a cached output when its generated `.f90` file has been removed.
 - Forward command-line arguments from compatibility entry points.
 
-[Unreleased]: https://github.com/nnardoto/uf90/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/nnardoto/uf90/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/nnardoto/uf90/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/nnardoto/uf90/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/nnardoto/uf90/releases/tag/v0.1.0
