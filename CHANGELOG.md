@@ -22,6 +22,9 @@ All notable changes to `uf90` are documented in this file. The project follows
   encodings.
 - Unicode identifier presentation in hover content when the generated ASCII
   name maps unambiguously to one source spelling in the project.
+- Pinned `fortls` 3.2.2 integration coverage for cross-file definition,
+  references, Unicode hover, unsaved document changes, and clean shutdown
+  using the oscillator example.
 
 ## [0.1.1] - 2026-08-07
 

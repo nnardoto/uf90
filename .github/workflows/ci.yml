@@ -52,7 +52,7 @@ jobs:
           python -m pip install ".[test]"
 
       - name: Run tests
-        run: python -m pytest
+        run: python -m pytest -m "not integration"
 
   package:
     name: Build and verify distributions
@@ -80,8 +80,10 @@ jobs:
       - name: Smoke-test wheel through pipx
         run: |
           PIPX_BIN_DIR="$RUNNER_TEMP/pipx-bin" pipx install dist/*.whl
+          PIPX_BIN_DIR="$RUNNER_TEMP/pipx-bin" pipx inject uf90 fortls==3.2.2
           "$RUNNER_TEMP/pipx-bin/uf90" --version
           "$RUNNER_TEMP/pipx-bin/fpm-uf90" --version
+          "$RUNNER_TEMP/pipx-bin/uf90-ls" --version
 
       - name: Upload distributions
         uses: actions/upload-artifact@v7
@@ -91,7 +93,7 @@ jobs:
           if-no-files-found: error
 
   fortls:
-    name: fortls compatibility
+    name: uf90-ls with fortls 3.2.2
     runs-on: ubuntu-latest
 
     steps:
@@ -104,24 +106,8 @@ jobs:
           python-version: "3.12"
           cache: pip
 
-      - name: Install project and fortls
-        run: python -m pip install . fortls==3.2.2
+      - name: Install project, tests, and pinned fortls
+        run: python -m pip install ".[test]" fortls==3.2.2
 
-      - name: Generate sources and fortls configuration
-        run: |
-          uf90 sync examples/06_oscillator
-          uf90 fortls-config examples/06_oscillator
-
-      - name: Verify navigation stays on Unicode sources
-        working-directory: examples/06_oscillator
-        run: |
-          fortls \
-            --disable_autoupdate \
-            --config .uf90-fortls.json \
-            --debug_rootpath . \
-            --debug_definition \
-            --debug_filepath app/main.f90u \
-            --debug_line 6 \
-            --debug_char 8 \
-            --debug_full_result > fortls-result.txt
-          grep -q "src/oscillator.f90u" fortls-result.txt
+      - name: Run real language-server integration
+        run: python -m pytest -m integration

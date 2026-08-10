@@ -9,6 +9,7 @@ import pytest
 
 from uf90.lsp import (
     JsonRpcProtocolError,
+    forward_messages,
     read_message,
     resolve_fortls,
     run_proxy,
@@ -43,6 +44,22 @@ def test_content_length_counts_utf8_bytes():
     raw_headers, raw_body = stream.getvalue().split(b"\r\n\r\n", 1)
     assert raw_headers == f"Content-Length: {len(raw_body)}".encode()
     assert read_message(BytesIO(stream.getvalue())) == message
+
+
+def test_cancel_notification_keeps_request_id_and_order():
+    request = {"jsonrpc": "2.0", "id": 27, "method": "textDocument/references"}
+    cancel = {
+        "jsonrpc": "2.0",
+        "method": "$/cancelRequest",
+        "params": {"id": 27},
+    }
+    destination = BytesIO()
+
+    forward_messages(BytesIO(frame(request) + frame(cancel)), destination)
+
+    forwarded = BytesIO(destination.getvalue())
+    assert read_message(forwarded) == request
+    assert read_message(forwarded) == cancel
 
 
 @pytest.mark.parametrize(

@@ -58,3 +58,6 @@ where = ["src"]
 [tool.pytest.ini_options]
 addopts = "-q"
 testpaths = ["tests"]
+markers = [
+    "integration: requires a real external language server",
+]
