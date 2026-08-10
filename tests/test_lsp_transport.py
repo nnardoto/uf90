@@ -14,6 +14,7 @@ from uf90.lsp import (
     run_proxy,
     write_message,
 )
+from uf90 import lsp
 
 
 def frame(message: dict) -> bytes:
@@ -70,6 +71,28 @@ def test_rejects_missing_fortls_and_proxy_recursion():
         resolve_fortls(
             {"UF90_FORTLS_PATH": "/tools/uf90-ls"}, launcher="/other/uf90-ls"
         )
+
+
+def test_resolves_fortls_in_same_python_environment(monkeypatch, tmp_path: Path):
+    python = tmp_path / "bin" / "python"
+    fortls = tmp_path / "bin" / "fortls"
+    python.parent.mkdir()
+    python.touch()
+    fortls.touch()
+    monkeypatch.setattr(sys, "executable", str(python))
+
+    assert resolve_fortls({}, which=lambda name: None) == str(fortls)
+
+
+def test_version_flag_is_forwarded_without_lsp_framing(monkeypatch):
+    monkeypatch.setattr(lsp, "resolve_fortls", lambda: "/tools/fortls")
+    calls: list[list[str]] = []
+    monkeypatch.setattr(
+        lsp.subprocess, "call", lambda args: calls.append(args) or 0
+    )
+
+    assert lsp.main(["--version"]) == 0
+    assert calls == [["/tools/fortls", "--version"]]
 
 
 def test_proxy_forwards_messages_through_deterministic_server(tmp_path: Path):

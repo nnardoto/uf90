@@ -117,6 +117,15 @@ def resolve_fortls(
     current_env = os.environ if env is None else env
     executable = current_env.get("UF90_FORTLS_PATH") or which("fortls")
     if not executable:
+        # A pipx installation can inject fortls into the same isolated
+        # environment as uf90. This also works when a GUI editor on macOS does
+        # not inherit the shell PATH containing ~/.local/bin.
+        sibling = Path(sys.executable).with_name(
+            "fortls.exe" if sys.platform == "win32" else "fortls"
+        )
+        if sibling.is_file():
+            executable = str(sibling)
+    if not executable:
         raise FortlsNotFoundError(
             "fortls não encontrado; instale-o ou defina UF90_FORTLS_PATH"
         )
@@ -198,6 +207,9 @@ def run_proxy(
 def main(argv: Sequence[str] | None = None) -> int:
     args = sys.argv[1:] if argv is None else list(argv)
     try:
+        if any(argument in {"--help", "-h", "--version", "-v"} for argument in args):
+            return subprocess.call([resolve_fortls(), *args])
+
         from .lsp_session import LspSession
 
         session = LspSession()

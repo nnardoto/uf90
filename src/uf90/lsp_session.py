@@ -4,6 +4,7 @@ from collections.abc import Callable, Mapping
 from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
+import re
 from typing import Any
 from urllib.parse import urlsplit, urlunsplit
 from urllib.request import url2pathname
@@ -31,6 +32,8 @@ LOCATION_RESULTS = {
     "textDocument/implementation",
     "textDocument/references",
 }
+
+ASCII_IDENTIFIER = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
 
 
 def generated_uri(source_uri: str) -> str:
@@ -324,6 +327,8 @@ class LspSession:
         translated = deepcopy(message)
         result = translated.get("result")
         if context.method == "textDocument/hover":
+            if isinstance(result, dict) and "contents" in result:
+                result["contents"] = self._map_hover_contents(result["contents"])
             if (
                 isinstance(result, dict)
                 and "range" in result
@@ -340,6 +345,78 @@ class LspSession:
         elif context.method in {"textDocument/documentSymbol", "workspace/symbol"}:
             translated["result"] = self._map_symbol_result(result, context.source_uri)
         return translated
+
+    def _map_hover_contents(self, contents: Any) -> Any:
+        symbols = self._presentation_symbols()
+
+        def replace_identifiers(text: str) -> str:
+            return ASCII_IDENTIFIER.sub(
+                lambda match: symbols.get(match.group(0).casefold(), match.group(0)),
+                text,
+            )
+
+        if isinstance(contents, str):
+            return replace_identifiers(contents)
+        if isinstance(contents, list):
+            return [self._map_hover_value(item, replace_identifiers) for item in contents]
+        return self._map_hover_value(contents, replace_identifiers)
+
+    @staticmethod
+    def _map_hover_value(
+        value: Any, replace_identifiers: Callable[[str], str]
+    ) -> Any:
+        if isinstance(value, str):
+            return replace_identifiers(value)
+        if not isinstance(value, dict) or not isinstance(value.get("value"), str):
+            return value
+        translated = deepcopy(value)
+        translated["value"] = replace_identifiers(translated["value"])
+        return translated
+
+    def _presentation_symbols(self) -> dict[str, str]:
+        candidates: dict[str, set[str]] = {}
+        open_paths: set[Path] = set()
+
+        for document in self._documents.values():
+            self._collect_symbols(document.translation, candidates)
+            path = file_uri_to_path(document.source_uri)
+            if path is not None:
+                open_paths.add(path)
+
+        if self.root.is_dir():
+            for path in self.root.rglob("*"):
+                if (
+                    not path.is_file()
+                    or path.suffix.lower() != ".f90u"
+                    or path in open_paths
+                ):
+                    continue
+                try:
+                    translation = translate_with_map(path.read_text(encoding="utf-8"))
+                except (OSError, UnicodeError, ValueError):
+                    continue
+                self._collect_symbols(translation, candidates)
+
+        return {
+            generated: next(iter(sources))
+            for generated, sources in candidates.items()
+            if len(sources) == 1
+        }
+
+    @staticmethod
+    def _collect_symbols(
+        translation: TranslationResult, candidates: dict[str, set[str]]
+    ) -> None:
+        for line in translation.source_map.lines:
+            for match in ASCII_IDENTIFIER.finditer(line.generated_text):
+                source_start = line.generated_to_source[match.start()]
+                source_end = line.generated_to_source[match.end()]
+                source_name = line.source_text[source_start:source_end]
+                generated_name = match.group(0)
+                if source_name and source_name != generated_name:
+                    candidates.setdefault(generated_name.casefold(), set()).add(
+                        source_name
+                    )
 
     def _publish_diagnostics(self, message: dict[str, Any]) -> Mapping[str, Any]:
         params = self._params(message)

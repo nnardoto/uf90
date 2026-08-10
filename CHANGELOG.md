@@ -20,6 +20,8 @@ All notable changes to `uf90` are documented in this file. The project follows
   type definitions, implementations, references, document/workspace symbols,
   and diagnostics, including cross-file locations and negotiated position
   encodings.
+- Unicode identifier presentation in hover content when the generated ASCII
+  name maps unambiguously to one source spelling in the project.
 
 ## [0.1.1] - 2026-08-07
 

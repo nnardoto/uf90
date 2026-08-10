@@ -66,6 +66,70 @@ def test_hover_request_and_range_are_mapped_bidirectionally(tmp_path: Path):
     }
     translated = session.server_to_client(response)
     assert translated["result"]["range"] == range_(0, 8, 9)
+    assert translated["result"]["contents"] == "real :: α"
+
+
+def test_hover_translates_markup_and_marked_string_values(tmp_path: Path):
+    source = tmp_path / "hover.f90u"
+    source.write_text("real :: ω, E₀\n", encoding="utf-8")
+    session = LspSession(tmp_path, sync=lambda root: 0)
+    open_unicode(session, source, "real :: ω, E₀\n")
+    session.client_to_server(
+        request(
+            12,
+            "textDocument/hover",
+            {
+                "textDocument": {"uri": source.as_uri()},
+                "position": position(0, 8),
+            },
+        )
+    )
+
+    translated = session.server_to_client(
+        {
+            "jsonrpc": "2.0",
+            "id": 12,
+            "result": {
+                "contents": [
+                    {"language": "fortran", "value": "REAL :: uc_omega"},
+                    {"kind": "markdown", "value": "Energy `E_0` and uc_omega"},
+                    "uc_omega",
+                ]
+            },
+        }
+    )
+
+    assert translated["result"]["contents"] == [
+        {"language": "fortran", "value": "REAL :: ω"},
+        {"kind": "markdown", "value": "Energy `E₀` and ω"},
+        "ω",
+    ]
+
+
+def test_hover_keeps_ambiguous_generated_name_in_ascii(tmp_path: Path):
+    source = tmp_path / "collision.f90u"
+    source.write_text("real :: α, Α\n", encoding="utf-8")
+    session = LspSession(tmp_path, sync=lambda root: 0)
+    open_unicode(session, source, "real :: α, Α\n")
+    session.client_to_server(
+        request(
+            13,
+            "textDocument/hover",
+            {
+                "textDocument": {"uri": source.as_uri()},
+                "position": position(0, 8),
+            },
+        )
+    )
+
+    translated = session.server_to_client(
+        {
+            "jsonrpc": "2.0",
+            "id": 13,
+            "result": {"contents": "real :: uc_alpha"},
+        }
+    )
+
     assert translated["result"]["contents"] == "real :: uc_alpha"
 
 
