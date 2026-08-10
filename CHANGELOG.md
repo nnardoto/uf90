@@ -5,6 +5,12 @@ All notable changes to `uf90` are documented in this file. The project follows
 
 ## [Unreleased]
 
+### Added
+
+- Bidirectional source maps for translated text, including explicit UTF-8,
+  UTF-16, and UTF-32 LSP position conversion, as the first building block of
+  the `uf90-ls` proxy planned for 0.2.0.
+
 ## [0.1.1] - 2026-08-07
 
 ### Added

@@ -1,6 +1,18 @@
-__all__ = ["translate_text", "translate_file", "sync_project", "write_fortls_config"]
+__all__ = [
+    "TranslationResult",
+    "translate_text",
+    "translate_with_map",
+    "translate_file",
+    "sync_project",
+    "write_fortls_config",
+]
 __version__ = "0.1.1"
 
-from .translator import translate_text, translate_file
+from .translator import (
+    TranslationResult,
+    translate_file,
+    translate_text,
+    translate_with_map,
+)
 from .sync import sync_project
 from .editor import write_fortls_config
