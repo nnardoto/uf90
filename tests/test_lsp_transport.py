@@ -91,13 +91,20 @@ def test_rejects_missing_fortls_and_proxy_recursion():
         )
 
 
-def test_resolves_fortls_in_same_python_environment(monkeypatch, tmp_path: Path):
+@pytest.mark.parametrize(
+    ("platform", "fortls_name"),
+    [("darwin", "fortls"), ("win32", "fortls.exe")],
+)
+def test_resolves_fortls_in_same_python_environment(
+    monkeypatch, tmp_path: Path, platform: str, fortls_name: str
+):
     python = tmp_path / "bin" / "python"
-    fortls = tmp_path / "bin" / "fortls"
+    fortls = tmp_path / "bin" / fortls_name
     python.parent.mkdir()
     python.touch()
     fortls.touch()
     monkeypatch.setattr(sys, "executable", str(python))
+    monkeypatch.setattr(sys, "platform", platform)
 
     assert resolve_fortls({}, which=lambda name: None) == str(fortls)
 
