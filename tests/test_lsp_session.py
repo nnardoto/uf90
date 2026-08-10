@@ -54,6 +54,10 @@ def test_initialize_syncs_workspace_once_and_advertises_full_sync(tmp_path: Path
         "change": FULL_DOCUMENT_SYNC,
         "save": {"includeText": True},
     }
+    assert translated["result"]["capabilities"]["completionProvider"] is None
+    assert translated["result"]["capabilities"]["signatureHelpProvider"] is None
+    assert translated["result"]["capabilities"]["renameProvider"] is False
+    assert translated["result"]["capabilities"]["codeActionProvider"] is False
     assert response["result"]["capabilities"]["textDocumentSync"] == 2
     assert session.server_to_client(response) is response
 
