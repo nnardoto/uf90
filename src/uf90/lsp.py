@@ -8,7 +8,7 @@ import shutil
 import subprocess
 import sys
 import threading
-from typing import Any, BinaryIO, TextIO
+from typing import Any, BinaryIO
 
 
 MAX_MESSAGE_BYTES = 64 * 1024 * 1024
@@ -16,6 +16,10 @@ MAX_MESSAGE_BYTES = 64 * 1024 * 1024
 
 class JsonRpcProtocolError(ValueError):
     """An invalid JSON-RPC/LSP frame was received."""
+
+
+class FortlsNotFoundError(FileNotFoundError):
+    """The underlying fortls executable could not be located."""
 
 
 def _read_exact(stream: BinaryIO, length: int) -> bytes:
@@ -113,7 +117,7 @@ def resolve_fortls(
     current_env = os.environ if env is None else env
     executable = current_env.get("UF90_FORTLS_PATH") or which("fortls")
     if not executable:
-        raise FileNotFoundError(
+        raise FortlsNotFoundError(
             "fortls não encontrado; instale-o ou defina UF90_FORTLS_PATH"
         )
 
@@ -136,6 +140,8 @@ def run_proxy(
     stdin: BinaryIO | None = None,
     stdout: BinaryIO | None = None,
     env: Mapping[str, str] | None = None,
+    client_transform: Callable[[dict[str, Any]], Mapping[str, Any]] | None = None,
+    server_transform: Callable[[dict[str, Any]], Mapping[str, Any]] | None = None,
 ) -> int:
     client_input = sys.stdin.buffer if stdin is None else stdin
     client_output = sys.stdout.buffer if stdout is None else stdout
@@ -153,7 +159,7 @@ def run_proxy(
 
     def client_to_server() -> None:
         try:
-            forward_messages(client_input, process.stdin)
+            forward_messages(client_input, process.stdin, client_transform)
         except Exception as exc:
             client_errors.append(exc)
         finally:
@@ -171,7 +177,7 @@ def run_proxy(
     input_thread.start()
 
     try:
-        forward_messages(process.stdout, client_output)
+        forward_messages(process.stdout, client_output, server_transform)
     except Exception:
         if process.poll() is None:
             process.terminate()
@@ -192,11 +198,18 @@ def run_proxy(
 def main(argv: Sequence[str] | None = None) -> int:
     args = sys.argv[1:] if argv is None else list(argv)
     try:
-        return run_proxy(args)
-    except FileNotFoundError as exc:
+        from .lsp_session import LspSession
+
+        session = LspSession()
+        return run_proxy(
+            args,
+            client_transform=session.client_to_server,
+            server_transform=session.server_to_client,
+        )
+    except FortlsNotFoundError as exc:
         print(f"uf90-ls: {exc}", file=sys.stderr)
         return 127
-    except (JsonRpcProtocolError, RuntimeError, BrokenPipeError) as exc:
+    except (JsonRpcProtocolError, RuntimeError, BrokenPipeError, OSError) as exc:
         print(f"uf90-ls: {exc}", file=sys.stderr)
         return 1
 

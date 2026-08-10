@@ -13,6 +13,9 @@ All notable changes to `uf90` are documented in this file. The project follows
 - `uf90-ls` executable with validated JSON-RPC framing, transparent
   bidirectional forwarding, safe fortls executable selection, and subprocess
   exit-status propagation.
+- Stateful `.f90u` document synchronization for `uf90-ls`, translating URIs
+  and full document contents in memory while writing generated `.f90` files
+  only after `textDocument/didSave`.
 
 ## [0.1.1] - 2026-08-07
 
