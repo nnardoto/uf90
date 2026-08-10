@@ -5,7 +5,13 @@ All notable changes to `uf90` are documented in this file. The project follows
 
 ## [Unreleased]
 
-## [0.2.0] - 2026-08-09
+### Added
+
+- Editor-independent LaTeX-style symbol completion in `uf90-ls`, including
+  `\\partial` → `∂` and `\\nabla` → `∇`. Calculus-prefixed identifiers are
+  translated readably, such as `∂x` → `partial_x` and `∇φ` → `nabla_phi`.
+
+## [0.2.0] - 2026-08-10
 
 ### Added
 
@@ -32,9 +38,6 @@ All notable changes to `uf90` are documented in this file. The project follows
 - `lsp` installation extra and `uf90 editor-config` generator for ready-to-use
   VS Code and Neovim configurations without overwriting existing files by
   default.
-- Editor-independent LaTeX-style Greek-letter completion in `uf90-ls`, such as
-  `\\alpha` → `α`, with automatic triggering in the generated Neovim setup.
-
 ## [0.1.1] - 2026-08-07
 
 ### Added

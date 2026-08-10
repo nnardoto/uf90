@@ -12,7 +12,7 @@ from urllib.request import url2pathname
 
 from .lsp import JsonRpcProtocolError
 from .lsp_types import ClientResponse
-from .mapping import GREEK
+from .mapping import CALCULUS, GREEK
 from .sync import sync_project
 from .translator import TranslationResult, translate_with_map
 
@@ -39,7 +39,10 @@ LOCATION_RESULTS = {
 ASCII_IDENTIFIER = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
 LATEX_PREFIX = re.compile(r"\\[A-Za-z]*$")
 LATEX_SYMBOLS = tuple(
-    sorted((f"\\{name}", symbol) for symbol, name in GREEK.items())
+    sorted(
+        (f"\\{name}", symbol)
+        for symbol, name in (GREEK | CALCULUS).items()
+    )
 )
 
 

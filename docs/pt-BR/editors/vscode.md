@@ -69,10 +69,10 @@ Abra `examples/06_oscillator` como workspace e use os arquivos `.f90u`:
 - faça uma alteração sem salvar e confirme que a navegação a reconhece sem
   modificar o `.f90` adjacente no disco.
 - digite `\alpha` e aceite a conclusão `α`; use `Ctrl+Space` se o menu não
-  estiver visível. Da mesma forma, `\Delta` insere `Δ`.
+  estiver visível. `\partial` e `\nabla` inserem `∂` e `∇`.
 
 Navegação somente para leitura, símbolos, diagnósticos e nomes Unicode no
-hover estão implementados. A conclusão para inserir letras gregas é fornecida
+hover estão implementados. A conclusão para inserir símbolos Unicode é fornecida
 localmente pelo `uf90-ls`; conclusão semântica do fortls, ajuda de assinatura,
 rename, ações de código e formatação permanecem desativados até que suas
 edições e seu texto de apresentação possam ser traduzidos com segurança.

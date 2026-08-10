@@ -67,8 +67,8 @@ shell.
 
 Em um buffer `.f90u`, digite `\alpha` e selecione o item `α` com `Ctrl+Y`.
 Digitar `\` abre automaticamente o menu; `Ctrl+Space` abre a conclusão
-manualmente. Comandos com inicial maiúscula, como `\Delta`, inserem letras
-gregas maiúsculas.
+manualmente. `\partial` e `\nabla` inserem `∂` e `∇`; comandos com inicial
+maiúscula, como `\Delta`, inserem letras gregas maiúsculas.
 
 ## Neovim 0.10
 

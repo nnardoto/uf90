@@ -106,6 +106,33 @@ def test_hover_translates_markup_and_marked_string_values(tmp_path: Path):
     ]
 
 
+def test_hover_restores_calculus_prefixed_identifiers(tmp_path: Path):
+    source = tmp_path / "calculus.f90u"
+    source.write_text("real :: ∂x, ∇φ\n", encoding="utf-8")
+    session = LspSession(tmp_path, sync=lambda root: 0)
+    open_unicode(session, source, "real :: ∂x, ∇φ\n")
+    session.client_to_server(
+        request(
+            14,
+            "textDocument/hover",
+            {
+                "textDocument": {"uri": source.as_uri()},
+                "position": position(0, 9),
+            },
+        )
+    )
+
+    translated = session.server_to_client(
+        {
+            "jsonrpc": "2.0",
+            "id": 14,
+            "result": {"contents": "real :: partial_x, nabla_phi"},
+        }
+    )
+
+    assert translated["result"]["contents"] == "real :: ∂x, ∇φ"
+
+
 def test_hover_keeps_ambiguous_generated_name_in_ascii(tmp_path: Path):
     source = tmp_path / "collision.f90u"
     source.write_text("real :: α, Α\n", encoding="utf-8")

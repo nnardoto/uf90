@@ -45,6 +45,12 @@ def test_reserved_name_in_code_is_rejected():
         translate_text("real :: uc_alpha\n")
 
 
+@pytest.mark.parametrize("name", ["partial_x", "nabla_phi"])
+def test_reserved_calculus_prefix_in_code_is_rejected(name: str):
+    with pytest.raises(ValueError, match=name):
+        translate_text(f"real :: {name}\n")
+
+
 def test_reserved_name_in_string_and_comment_is_allowed():
     source = 'print *, "uc_alpha" ! uc_beta\n'
     assert translate_text(source) == source
@@ -52,6 +58,11 @@ def test_reserved_name_in_string_and_comment_is_allowed():
 
 def test_reserved_name_must_match_complete_identifier():
     source = "real :: my_uc_alpha_value\n"
+    assert translate_text(source) == source
+
+
+def test_reserved_calculus_prefix_must_start_identifier():
+    source = "real :: my_partial_x, my_nabla_phi\n"
     assert translate_text(source) == source
 
 

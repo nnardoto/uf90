@@ -147,6 +147,48 @@ def test_latex_completion_is_empty_without_a_backslash_prefix(tmp_path: Path):
     assert response.message["result"]["items"] == []
 
 
+@pytest.mark.parametrize(
+    ("command", "symbol"),
+    [("\\partial", "∂"), ("\\nabla", "∇")],
+)
+def test_latex_completion_includes_calculus_symbols(
+    tmp_path: Path, command: str, symbol: str
+):
+    source = tmp_path / "model.f90u"
+    uri = source.as_uri()
+    session = LspSession(sync=lambda root: 0)
+    session.client_to_server(
+        notification(
+            "textDocument/didOpen",
+            {
+                "textDocument": {
+                    "uri": uri,
+                    "version": 1,
+                    "text": command,
+                }
+            },
+        )
+    )
+
+    response = session.client_to_server(
+        {
+            "jsonrpc": "2.0",
+            "id": 23,
+            "method": "textDocument/completion",
+            "params": {
+                "textDocument": {"uri": uri},
+                "position": {"line": 0, "character": len(command)},
+            },
+        }
+    )
+
+    assert isinstance(response, ClientResponse)
+    items = response.message["result"]["items"]
+    assert len(items) == 1
+    assert items[0]["filterText"] == command
+    assert items[0]["textEdit"]["newText"] == symbol
+
+
 def test_initialize_performs_real_project_sync_before_forwarding(tmp_path: Path):
     source = tmp_path / "model.f90u"
     source.write_text("real :: α\n", encoding="utf-8")

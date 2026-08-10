@@ -5,7 +5,15 @@ from pathlib import Path
 import hashlib
 import re
 
-from .mapping import GREEK, SUBS, SUPS, is_fortran_ident_char, reserved_ascii_names
+from .mapping import (
+    CALCULUS,
+    GREEK,
+    SUBS,
+    SUPS,
+    is_fortran_ident_char,
+    reserved_ascii_names,
+    reserved_ascii_prefixes,
+)
 
 
 @dataclass(frozen=True)
@@ -139,13 +147,18 @@ _IDENT = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
 
 
 def _is_ident_start(ch: str) -> bool:
-    return (ch.isascii() and (ch.isalpha() or ch == "_")) or ch in GREEK
+    return (
+        (ch.isascii() and (ch.isalpha() or ch == "_"))
+        or ch in GREEK
+        or ch in CALCULUS
+    )
 
 
 def _is_ident_char(ch: str) -> bool:
     return (
         (ch.isascii() and (ch.isalnum() or ch == "_"))
         or ch in GREEK
+        or ch in CALCULUS
         or ch in SUBS
         or ch in SUPS
     )
@@ -159,6 +172,13 @@ def _translate_identifier_pieces(
     i = 0
     while i < len(s):
         ch = s[i]
+
+        if ch in CALCULUS:
+            replacement = f"{CALCULUS[ch]}_"
+            pieces.append((ch, replacement))
+            generated += replacement
+            i += 1
+            continue
 
         if ch in GREEK:
             name = GREEK[ch]
@@ -203,8 +223,14 @@ def _translate_identifier_fragment(s: str, opt: TranslateOptions) -> str:
     return "".join(generated for _, generated in _translate_identifier_pieces(s, opt))
 
 
-def _validate_ascii_identifier(token: str, bad: set[str]) -> None:
-    if _IDENT.fullmatch(token) and token.lower() in bad:
+def _validate_ascii_identifier(
+    token: str, bad: set[str], bad_prefixes: set[str]
+) -> None:
+    normalized = token.lower()
+    if _IDENT.fullmatch(token) and (
+        normalized in bad
+        or any(normalized.startswith(prefix) for prefix in bad_prefixes)
+    ):
         raise ValueError(
             f"Identificador ASCII reservado encontrado no fonte unicode: '{token}'. "
             "Use o símbolo Unicode correspondente ou renomeie o identificador."
@@ -215,6 +241,7 @@ def _translate_line(
     line: str,
     opt: TranslateOptions,
     bad: set[str],
+    bad_prefixes: set[str],
     quote: str | None,
 ) -> tuple[str, str | None, tuple[int, ...], tuple[int, ...]]:
     """Translate identifiers while leaving character literals untouched.
@@ -262,7 +289,7 @@ def _translate_line(
             while end < len(line) and _is_ident_char(line[end]):
                 end += 1
             token = line[i:end]
-            _validate_ascii_identifier(token, bad)
+            _validate_ascii_identifier(token, bad, bad_prefixes)
             for source, generated in _translate_identifier_pieces(token, opt):
                 out.emit(source, generated)
             i = end
@@ -306,11 +333,12 @@ def translate_with_map(
 
     # Checa apenas tokens (evita falso positivo por substring)
     bad = {x.lower() for x in reserved_ascii_names()}
+    bad_prefixes = {x.lower() for x in reserved_ascii_prefixes()}
 
     quote: str | None = None
     for line in lines:
         translated, quote, source_to_generated, generated_to_source = _translate_line(
-            line, opt, bad, quote
+            line, opt, bad, bad_prefixes, quote
         )
         out_lines.append(translated)
 

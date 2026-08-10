@@ -15,6 +15,11 @@ GREEK = {
     "Φ": "Phi", "Χ": "Chi", "Ψ": "Psi", "Ω": "Omega",
 }
 
+CALCULUS = {
+    "∂": "partial",
+    "∇": "nabla",
+}
+
 SUBS = {
     # digits
     "₀": "0", "₁": "1", "₂": "2", "₃": "3", "₄": "4",
@@ -45,3 +50,7 @@ def reserved_ascii_names() -> set[str]:
     # Isso evita falsos positivos como "AtomNumber" conter "Nu" como substring.
     base = {x.lower() for x in GREEK.values()}
     return {f"uc_{x}" for x in base}
+
+
+def reserved_ascii_prefixes() -> set[str]:
+    return {f"{name}_" for name in CALCULUS.values()}

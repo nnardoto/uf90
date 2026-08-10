@@ -57,6 +57,17 @@ def test_map_preserves_empty_logical_line_after_newline():
     assert result.source_map.to_generated(1, 0) == (1, 0)
 
 
+def test_source_map_handles_calculus_prefixes():
+    result = translate_with_map("∂x, ∇φ")
+
+    assert result.text == "partial_x, nabla_phi"
+    assert result.source_map.to_generated(0, 1) == (0, 8)
+    assert result.source_map.to_generated(0, 2) == (0, 9)
+    assert result.source_map.to_source(0, 8) == (0, 1)
+    assert result.source_map.to_generated(0, 5) == (0, 17)
+    assert result.source_map.to_generated(0, 6) == (0, 20)
+
+
 def test_invalid_line_and_encoding_are_rejected():
     source_map = translate_with_map("α").source_map
 

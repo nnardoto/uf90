@@ -111,13 +111,15 @@ the corresponding `.f90u` source instead.
 ## Supported notation
 
 - Greek letters: `α` → `uc_alpha`, `Δt` → `uc_deltat`;
+- calculus prefixes: `∂x` → `partial_x`, `∇φ` → `nabla_phi`;
 - numeric subscripts: `T₁₀₀` → `T_100`;
 - alphanumeric subscripts: `Eₙ` → `E_n`, `Aᵢⱼ` → `A_ij`;
 - superscripts: `c²` → `c_p2`.
 
-With `uf90-ls`, type a LaTeX-style Greek name such as `\alpha` or `\Delta` and
-accept the completion to insert `α` or `Δ`. This works in both VS Code and
-Neovim; the generated Neovim setup also maps `Ctrl+Space` to manual completion.
+With `uf90-ls`, type a LaTeX-style symbol name such as `\alpha`, `\partial`,
+or `\nabla` and accept the completion to insert `α`, `∂`, or `∇`. This works
+in both VS Code and Neovim; the generated Neovim setup also maps `Ctrl+Space`
+to manual completion.
 
 Unicode does not provide subscript forms for every letter. The current set
 includes `ₐ ₑ ₕ ᵢ ⱼ ₖ ₗ ₘ ₙ ₒ ₚ ᵣ ₛ ₜ ᵤ ᵥ ₓ`, `ₔ`, digits, and the Greek forms

@@ -159,9 +159,9 @@ exists. Locations in handwritten Fortran or external libraries remain `.f90`.
 ### Milestone 2: completions and signatures
 
 Version 0.2 provides a deliberately smaller completion layer for input: the
-proxy handles LaTeX-style Greek commands such as `\alpha` locally and returns a
-`TextEdit` that replaces the command with `α`. This does not depend on fortls
-symbol identity and is therefore safe for both supported editors.
+proxy handles LaTeX-style commands such as `\alpha`, `\partial`, and `\nabla`
+locally and returns a `TextEdit` with the Unicode symbol. This does not depend
+on fortls symbol identity and is therefore safe for both supported editors.
 
 Completion labels, inserted text and `TextEdit` ranges may contain generated
 ASCII identifiers such as `uc_alpha`. Converting them back requires a project

@@ -106,13 +106,14 @@ edite o fonte `.f90u` correspondente.
 ## Notação reconhecida
 
 - letras gregas: `α` → `uc_alpha`, `Δt` → `uc_deltat`;
+- prefixos de cálculo: `∂x` → `partial_x`, `∇φ` → `nabla_phi`;
 - subscritos numéricos: `T₁₀₀` → `T_100`;
 - subscritos alfanuméricos: `Eₙ` → `E_n`, `Aᵢⱼ` → `A_ij`;
 - sobrescritos: `c²` → `c_p2`.
 
-Com o `uf90-ls`, digite um nome grego no estilo LaTeX, como `\alpha` ou
-`\Delta`, e aceite a conclusão para inserir `α` ou `Δ`. Isso funciona no VS
-Code e no Neovim; a configuração gerada para Neovim também associa
+Com o `uf90-ls`, digite um símbolo no estilo LaTeX, como `\alpha`, `\partial`
+ou `\nabla`, e aceite a conclusão para inserir `α`, `∂` ou `∇`. Isso funciona
+no VS Code e no Neovim; a configuração gerada para Neovim também associa
 `Ctrl+Space` à conclusão manual.
 
 O Unicode não oferece versões subscritas de todas as letras. O conjunto atual

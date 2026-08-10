@@ -65,7 +65,8 @@ The generated absolute path also works when Neovim does not inherit your shell
 
 In a `.f90u` buffer, type `\alpha` and select the `α` item with `Ctrl+Y`.
 Typing `\` opens the completion menu automatically; `Ctrl+Space` opens it
-manually. Uppercase commands such as `\Delta` insert uppercase Greek letters.
+manually. `\partial` and `\nabla` insert `∂` and `∇`; uppercase commands such
+as `\Delta` insert uppercase Greek letters.
 
 ## Neovim 0.10
 

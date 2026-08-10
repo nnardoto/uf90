@@ -68,10 +68,10 @@ Open `examples/06_oscillator` as the workspace and use the `.f90u` files:
 - make an unsaved edit and confirm navigation sees it without changing the
   adjacent `.f90` on disk.
 - type `\alpha` and accept the `α` completion; use `Ctrl+Space` if the menu is
-  not already visible. `\Delta` similarly inserts `Δ`.
+  not already visible. `\partial` and `\nabla` insert `∂` and `∇`.
 
 Read-only navigation, symbols, diagnostics, and Unicode names in hover are
-implemented. Greek-letter input completion is provided locally by `uf90-ls`;
+implemented. Unicode symbol input completion is provided locally by `uf90-ls`;
 fortls semantic completion, signature help, rename, code actions, and
 formatting remain disabled until their edits and presentation text can be
 translated safely.
