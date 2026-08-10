@@ -70,6 +70,8 @@ Abra `examples/06_oscillator` como workspace e use os arquivos `.f90u`:
   modificar o `.f90` adjacente no disco.
 - digite `\alpha` e aceite a conclusão `α`; use `Ctrl+Space` se o menu não
   estiver visível. `\partial` e `\nabla` inserem `∂` e `∇`.
+- aceite a conclusão de `x_n`, `T_{100}` ou `A_ij` para inserir `xₙ`, `T₁₀₀`
+  ou `Aᵢⱼ`. Os caracteres `_` e `}` final disparam essas sugestões.
 
 Navegação somente para leitura, símbolos, diagnósticos e nomes Unicode no
 hover estão implementados. A conclusão para inserir símbolos Unicode é fornecida

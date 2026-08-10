@@ -163,6 +163,8 @@ A versão 0.2 oferece uma camada deliberadamente menor para entrada: o proxy
 trata localmente comandos no estilo LaTeX, como `\alpha`, `\partial` e
 `\nabla`, e devolve um `TextEdit` com o símbolo Unicode. Isso não depende da
 identidade de símbolos do fortls e, portanto, é seguro nos dois editores.
+A mesma camada local converte entradas de subscrito aceitas, como `x_n` e
+`T_{100}`, sem reinterpretar automaticamente underscores Fortran comuns.
 
 Rótulos de sugestões, texto inserido e intervalos de `TextEdit` podem conter
 nomes ASCII gerados como `uc_alpha`. Convertê-los de volta requer um mapa de

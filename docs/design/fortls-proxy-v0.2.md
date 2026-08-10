@@ -162,6 +162,8 @@ Version 0.2 provides a deliberately smaller completion layer for input: the
 proxy handles LaTeX-style commands such as `\alpha`, `\partial`, and `\nabla`
 locally and returns a `TextEdit` with the Unicode symbol. This does not depend
 on fortls symbol identity and is therefore safe for both supported editors.
+The same local layer converts accepted subscript input such as `x_n` and
+`T_{100}` without reinterpreting ordinary Fortran underscores automatically.
 
 Completion labels, inserted text and `TextEdit` ranges may contain generated
 ASCII identifiers such as `uc_alpha`. Converting them back requires a project

@@ -68,6 +68,10 @@ Typing `\` opens the completion menu automatically; `Ctrl+Space` opens it
 manually. `\partial` and `\nabla` insert `∂` and `∇`; uppercase commands such
 as `\Delta` insert uppercase Greek letters.
 
+LaTeX-style subscripts work in the same menu: accept `x_n`, `T_{100}`, or
+`A_ij` to insert `xₙ`, `T₁₀₀`, or `Aᵢⱼ`. Typing `_` and closing `}` trigger
+the relevant suggestions; `Ctrl+Space` remains available for a manual request.
+
 ## Neovim 0.10
 
 Neovim 0.10 can start the proxy directly for Fortran buffers:

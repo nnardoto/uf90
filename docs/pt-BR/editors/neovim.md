@@ -70,6 +70,11 @@ Digitar `\` abre automaticamente o menu; `Ctrl+Space` abre a conclusão
 manualmente. `\partial` e `\nabla` inserem `∂` e `∇`; comandos com inicial
 maiúscula, como `\Delta`, inserem letras gregas maiúsculas.
 
+Subscritos no estilo LaTeX funcionam no mesmo menu: aceite `x_n`, `T_{100}` ou
+`A_ij` para inserir `xₙ`, `T₁₀₀` ou `Aᵢⱼ`. Digitar `_` e fechar `}` dispara
+as sugestões relevantes; `Ctrl+Space` continua disponível para acionamento
+manual.
+
 ## Neovim 0.10
 
 O Neovim 0.10 pode iniciar o proxy diretamente para buffers Fortran:

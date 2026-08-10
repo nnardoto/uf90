@@ -10,6 +10,9 @@ All notable changes to `uf90` are documented in this file. The project follows
 - Editor-independent LaTeX-style symbol completion in `uf90-ls`, including
   `\\partial` → `∂` and `\\nabla` → `∇`. Calculus-prefixed identifiers are
   translated readably, such as `∂x` → `partial_x` and `∇φ` → `nabla_phi`.
+- LaTeX-style Unicode subscript completion, including `x_n` → `xₙ`,
+  `T_{100}` → `T₁₀₀`, and `A_ij` → `Aᵢⱼ`, limited to subscript characters
+  that exist in Unicode.
 
 ## [0.2.0] - 2026-08-10
 

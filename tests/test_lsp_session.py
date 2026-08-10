@@ -61,7 +61,7 @@ def test_initialize_syncs_workspace_once_and_advertises_full_sync(tmp_path: Path
         "save": {"includeText": True},
     }
     assert translated["result"]["capabilities"]["completionProvider"] == {
-        "triggerCharacters": ["\\"]
+        "triggerCharacters": ["\\", "_", "}"]
     }
     assert translated["result"]["capabilities"]["signatureHelpProvider"] is None
     assert translated["result"]["capabilities"]["renameProvider"] is False
@@ -187,6 +187,91 @@ def test_latex_completion_includes_calculus_symbols(
     assert len(items) == 1
     assert items[0]["filterText"] == command
     assert items[0]["textEdit"]["newText"] == symbol
+
+
+@pytest.mark.parametrize(
+    ("source_text", "expected", "start"),
+    [
+        ("x_n", "ₙ", 1),
+        ("T_{100}", "₁₀₀", 1),
+        ("A_ij", "ᵢⱼ", 1),
+        ("value_beta", "ᵦ", 5),
+    ],
+)
+def test_latex_style_subscript_completion(
+    tmp_path: Path, source_text: str, expected: str, start: int
+):
+    source = tmp_path / "model.f90u"
+    uri = source.as_uri()
+    session = LspSession(sync=lambda root: 0)
+    session.client_to_server(
+        notification(
+            "textDocument/didOpen",
+            {
+                "textDocument": {
+                    "uri": uri,
+                    "version": 1,
+                    "text": source_text,
+                }
+            },
+        )
+    )
+
+    response = session.client_to_server(
+        {
+            "jsonrpc": "2.0",
+            "id": 24,
+            "method": "textDocument/completion",
+            "params": {
+                "textDocument": {"uri": uri},
+                "position": {"line": 0, "character": len(source_text)},
+            },
+        }
+    )
+
+    assert isinstance(response, ClientResponse)
+    items = response.message["result"]["items"]
+    assert len(items) == 1
+    assert items[0]["textEdit"] == {
+        "range": {
+            "start": {"line": 0, "character": start},
+            "end": {"line": 0, "character": len(source_text)},
+        },
+        "newText": expected,
+    }
+
+
+def test_braced_subscript_rejects_unavailable_unicode_letter(tmp_path: Path):
+    source = tmp_path / "model.f90u"
+    uri = source.as_uri()
+    session = LspSession(sync=lambda root: 0)
+    session.client_to_server(
+        notification(
+            "textDocument/didOpen",
+            {
+                "textDocument": {
+                    "uri": uri,
+                    "version": 1,
+                    "text": "x_{b}",
+                }
+            },
+        )
+    )
+
+    response = session.client_to_server(
+        {
+            "jsonrpc": "2.0",
+            "id": 25,
+            "method": "textDocument/completion",
+            "params": {
+                "textDocument": {"uri": uri},
+                "position": {"line": 0, "character": 5},
+            },
+        }
+    )
+
+    assert isinstance(response, ClientResponse)
+    assert response.message["result"]["items"] == []
 
 
 def test_initialize_performs_real_project_sync_before_forwarding(tmp_path: Path):

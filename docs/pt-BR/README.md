@@ -116,6 +116,11 @@ ou `\nabla`, e aceite a conclusão para inserir `α`, `∂` ou `∇`. Isso funci
 no VS Code e no Neovim; a configuração gerada para Neovim também associa
 `Ctrl+Space` à conclusão manual.
 
+Subscritos usam a entrada familiar do LaTeX: aceitar a conclusão de `x_n`,
+`T_{100}` ou `A_ij` produz `xₙ`, `T₁₀₀` ou `Aᵢⱼ`. O menu abre depois de `_`,
+e fechar `}` dispara a conclusão de uma sequência entre chaves. Somente
+caracteres que possuem forma subscrita real em Unicode são oferecidos.
+
 O Unicode não oferece versões subscritas de todas as letras. O conjunto atual
 inclui `ₐ ₑ ₕ ᵢ ⱼ ₖ ₗ ₘ ₙ ₒ ₚ ᵣ ₛ ₜ ᵤ ᵥ ₓ`, `ₔ`, dígitos e as formas gregas
 `ᵦ ᵧ ᵨ ᵩ ᵪ`.

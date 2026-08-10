@@ -12,7 +12,7 @@ from urllib.request import url2pathname
 
 from .lsp import JsonRpcProtocolError
 from .lsp_types import ClientResponse
-from .mapping import CALCULUS, GREEK
+from .mapping import CALCULUS, GREEK, SUBS
 from .sync import sync_project
 from .translator import TranslationResult, translate_with_map
 
@@ -38,12 +38,19 @@ LOCATION_RESULTS = {
 
 ASCII_IDENTIFIER = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
 LATEX_PREFIX = re.compile(r"\\[A-Za-z]*$")
+SUBSCRIPT_SUFFIX = re.compile(
+    r"_(?:\{(?P<braced>[A-Za-z0-9]+)\}|(?P<plain>[A-Za-z0-9]*))$"
+)
 LATEX_SYMBOLS = tuple(
     sorted(
         (f"\\{name}", symbol)
         for symbol, name in (GREEK | CALCULUS).items()
     )
 )
+SUBSCRIPT_NAMES = {name: symbol for symbol, name in SUBS.items()}
+SUBSCRIPT_CHARACTERS = {
+    name: symbol for name, symbol in SUBSCRIPT_NAMES.items() if len(name) == 1
+}
 
 
 def generated_uri(source_uri: str) -> str:
@@ -165,7 +172,7 @@ class LspSession:
         # The remaining methods can return edits or generated ASCII names and
         # stay disabled until they have dedicated, lossless translators.
         translated_capabilities["completionProvider"] = {
-            "triggerCharacters": ["\\"],
+            "triggerCharacters": ["\\", "_", "}"],
         }
         translated_capabilities["signatureHelpProvider"] = None
         translated_capabilities["renameProvider"] = False
@@ -183,7 +190,7 @@ class LspSession:
             raise JsonRpcProtocolError("LSP request id must be a string or integer")
 
         position = self._validated_position(params.get("position"))
-        items = self._latex_completions(uri, position)
+        items = self._input_completions(uri, position)
         return ClientResponse(
             {
                 "jsonrpc": "2.0",
@@ -192,7 +199,7 @@ class LspSession:
             }
         )
 
-    def _latex_completions(
+    def _input_completions(
         self, uri: str, position: dict[str, int]
     ) -> list[dict[str, Any]]:
         if generated_uri(uri) == uri:
@@ -209,18 +216,27 @@ class LspSession:
         cursor = self._lsp_units_to_index(
             line, position["character"], self.position_encoding
         )
-        match = LATEX_PREFIX.search(line[:cursor])
+        before_cursor = line[:cursor]
+        match = LATEX_PREFIX.search(before_cursor)
+        if match is not None:
+            return self._latex_symbol_items(line, line_number, position, match)
+
+        match = SUBSCRIPT_SUFFIX.search(before_cursor)
         if match is None:
             return []
+        return self._subscript_items(line, line_number, position, match)
 
+    def _latex_symbol_items(
+        self,
+        line: str,
+        line_number: int,
+        position: dict[str, int],
+        match: re.Match[str],
+    ) -> list[dict[str, Any]]:
         prefix = match.group(0)
-        start_character = self._index_to_lsp_units(
-            line, match.start(), self.position_encoding
+        replacement_range = self._completion_range(
+            line, line_number, position, match.start()
         )
-        replacement_range = {
-            "start": {"line": line_number, "character": start_character},
-            "end": position,
-        }
         return [
             {
                 "label": f"{command} → {symbol}",
@@ -232,6 +248,80 @@ class LspSession:
             for command, symbol in LATEX_SYMBOLS
             if command.startswith(prefix)
         ]
+
+    def _subscript_items(
+        self,
+        line: str,
+        line_number: int,
+        position: dict[str, int],
+        match: re.Match[str],
+    ) -> list[dict[str, Any]]:
+        braced = match.group("braced")
+        plain = match.group("plain")
+        content = braced if braced is not None else plain
+        replacement_range = self._completion_range(
+            line, line_number, position, match.start()
+        )
+
+        if braced is not None:
+            value = self._subscript_value(content)
+            if value is None:
+                return []
+            command = match.group(0)
+            return [self._subscript_item(command, value, replacement_range)]
+
+        if content and len(content) > 1:
+            value = self._subscript_value(content)
+            if value is not None:
+                command = match.group(0)
+                return [self._subscript_item(command, value, replacement_range)]
+
+        prefix = f"_{content or ''}"
+        return [
+            self._subscript_item(command, symbol, replacement_range)
+            for name, symbol in sorted(SUBSCRIPT_NAMES.items())
+            if (command := f"_{name}").startswith(prefix)
+        ]
+
+    @staticmethod
+    def _subscript_value(content: str) -> str | None:
+        exact = SUBSCRIPT_NAMES.get(content)
+        if exact is not None:
+            return exact
+        try:
+            return "".join(SUBSCRIPT_CHARACTERS[char] for char in content)
+        except KeyError:
+            return None
+
+    @staticmethod
+    def _subscript_item(
+        command: str,
+        value: str,
+        replacement_range: dict[str, dict[str, int]],
+    ) -> dict[str, Any]:
+        names = ", ".join(unicodedata.name(char) for char in value)
+        return {
+            "label": f"{command} → {value}",
+            "kind": 12,
+            "detail": names,
+            "filterText": command,
+            "textEdit": {"range": replacement_range, "newText": value},
+        }
+
+    def _completion_range(
+        self,
+        line: str,
+        line_number: int,
+        position: dict[str, int],
+        start: int,
+    ) -> dict[str, dict[str, int]]:
+        start_character = self._index_to_lsp_units(
+            line, start, self.position_encoding
+        )
+        return {
+            "start": {"line": line_number, "character": start_character},
+            "end": position,
+        }
 
     @staticmethod
     def _lsp_units_to_index(text: str, character: int, encoding: str) -> int:

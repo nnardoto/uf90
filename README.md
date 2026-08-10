@@ -121,6 +121,11 @@ or `\nabla` and accept the completion to insert `α`, `∂`, or `∇`. This work
 in both VS Code and Neovim; the generated Neovim setup also maps `Ctrl+Space`
 to manual completion.
 
+Subscripts use familiar LaTeX-style input: accepting completion for `x_n`,
+`T_{100}`, or `A_ij` produces `xₙ`, `T₁₀₀`, or `Aᵢⱼ`. The menu opens after
+`_`, and closing `}` triggers braced-sequence completion. Only characters with
+real Unicode subscript forms are offered.
+
 Unicode does not provide subscript forms for every letter. The current set
 includes `ₐ ₑ ₕ ᵢ ⱼ ₖ ₗ ₘ ₙ ₒ ₚ ᵣ ₛ ₜ ᵤ ᵥ ₓ`, `ₔ`, digits, and the Greek forms
 `ᵦ ᵧ ᵨ ᵩ ᵪ`.

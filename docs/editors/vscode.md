@@ -69,6 +69,8 @@ Open `examples/06_oscillator` as the workspace and use the `.f90u` files:
   adjacent `.f90` on disk.
 - type `\alpha` and accept the `α` completion; use `Ctrl+Space` if the menu is
   not already visible. `\partial` and `\nabla` insert `∂` and `∇`.
+- accept completion for `x_n`, `T_{100}`, or `A_ij` to insert `xₙ`, `T₁₀₀`,
+  or `Aᵢⱼ`. The `_` and closing `}` characters trigger these suggestions.
 
 Read-only navigation, symbols, diagnostics, and Unicode names in hover are
 implemented. Unicode symbol input completion is provided locally by `uf90-ls`;
