@@ -1,51 +1,73 @@
-# VS Code and fortls
+# VS Code and uf90-ls
 
 [Português (Brasil)](../pt-BR/editors/vscode.md)
 
-This integration was tested with Modern Fortran 4.0.0 and fortls 3.2.2.
+The experimental 0.2 integration uses `uf90-ls` as a bidirectional proxy. The
+editor opens `.f90u` sources while fortls indexes their generated `.f90` pairs.
+It has been tested with Modern Fortran 4.0.0 and fortls 3.2.2.
 
-Install the [Modern Fortran extension](https://marketplace.visualstudio.com/items?itemName=fortran-lang.linter-gfortran)
-and make sure `fortls` is available to it. Then generate the project-specific
-fortls configuration from the directory containing `fpm.toml`:
+## Install the development version
+
+From a checkout of the 0.2 branch:
 
 ```bash
-uf90 fortls-config
+pipx install --force --editable .
+pipx inject uf90 fortls==3.2.2
+uf90-ls --version
 ```
 
-The generated `.uf90-fortls.json` adds `.f90u` to the indexed suffixes and
-excludes only the corresponding generated `.f90` files. Handwritten `.f90`
-sources remain indexed. Run the command again after adding or removing a
-`.f90u` file.
+The last command should print `3.2.2`. Injecting fortls into the uf90 pipx
+environment also lets GUI-launched editors find it when they do not inherit
+your shell `PATH`.
 
-Add these workspace settings to `.vscode/settings.json`:
+## Workspace settings
+
+Install the [Modern Fortran extension](https://marketplace.visualstudio.com/items?itemName=fortran-lang.linter-gfortran),
+then add this to `.vscode/settings.json`:
 
 ```json
 {
   "files.associations": {
     "*.f90u": "FortranFreeForm"
   },
-  "fortran.fortls.configure": ".uf90-fortls.json",
+  "fortran.fortls.path": "/absolute/path/to/uf90-ls",
+  "fortran.fortls.configure": "",
+  "fortran.fortls.incrementalSync": false,
+  "fortran.fortls.notifyInit": true,
   "fortran.linter.compiler": "Disabled"
 }
 ```
 
-The compiler linter is disabled because Fortran compilers receive the Unicode
-source before `uf90` can translate it. Compilation diagnostics remain available
-through `fpm uf90 build`.
+Use `command -v uf90-ls` (or `where uf90-ls` on Windows) to obtain the absolute
+path. Full-document synchronization is required by the current proxy.
 
-## Current behavior
+Do not select `.uf90-fortls.json` in proxy mode. That legacy configuration
+indexes `.f90u` directly, while `uf90-ls` needs fortls to index generated
+`.f90` files. The compiler linter remains disabled because a Fortran compiler
+cannot consume the Unicode source directly; compilation diagnostics remain
+available through `fpm uf90 build`.
 
-With this configuration, syntax highlighting, document symbols, diagnostics,
-and navigation between project files work on `.f90u` sources. Hover,
-definitions, and references also work for identifiers that begin with an ASCII
-letter and contain Unicode subscripts or superscripts, such as `E₀`.
+## What to test
 
-In fortls 3.2.2, those operations do not resolve identifiers that begin with a
-Greek letter, such as `α` or `Δt`. The parser still indexes these declarations,
-but this limitation means that the current integration is partial rather than
-full language-server support.
+Open `examples/06_oscillator` as the workspace and use the `.f90u` files:
 
-The proposed next step is a bidirectional proxy that lets fortls analyze the
-generated `.f90` while the editor continues to display `.f90u`. See the
-[uf90 0.2 design proposal](../design/fortls-proxy-v0.2.md). It is not
-implemented in 0.1.1.
+- hover over `system%ω` and `system%Δt`;
+- go to their declarations in `src/oscillator.f90u`;
+- find references and confirm every paired result points to `.f90u`;
+- make an unsaved edit and confirm navigation sees it without changing the
+  adjacent `.f90` on disk.
+
+Read-only navigation, symbols, diagnostics, and Unicode names in hover are
+implemented. Completion, signature help, rename, code actions, and formatting
+are intentionally disabled until their edits and presentation text can be
+translated safely.
+
+If the server does not attach, run **Fortran: Restart the Fortran Language
+Server** and inspect **View: Output → Modern Fortran**. Also confirm that
+`uf90-ls --version` works in a terminal.
+
+## Legacy direct-fortls mode
+
+Without the 0.2 proxy, `uf90 fortls-config` generates the partial 0.1.1 setup
+that indexes `.f90u` directly. It supports identifiers such as `E₀`, but fortls
+3.2.2 cannot resolve names beginning with Greek letters in that mode.

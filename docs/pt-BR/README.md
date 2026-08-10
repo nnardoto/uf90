@@ -131,14 +131,11 @@ precisa ser atualizada.
 
 ## Editores
 
-Para realce de sintaxe e suporte parcial do servidor de linguagem no VS Code,
-consulte a [configuração do VS Code e fortls](editors/vscode.md). Ela inclui um
-arquivo gerado para manter a navegação nos fontes `.f90u`, em vez dos arquivos
-`.f90` derivados.
-
-Um proxy bidirecional para o fortls está sendo considerado para a versão 0.2.0.
-A [proposta de arquitetura](design/fortls-proxy-v0.2.md) registra o escopo e as
-decisões atuais; ela ainda não está implementada.
+O proxy experimental `uf90-ls` da versão 0.2 permite que o fortls analise os
+arquivos `.f90` gerados enquanto os editores continuam exibindo `.f90u`. Há
+guias de configuração para [VS Code](editors/vscode.md) e
+[Neovim](editors/neovim.md). O [documento de arquitetura](design/fortls-proxy-v0.2.md)
+acompanha os critérios de aceite e o escopo restante.
 
 ## Estado e escopo
 

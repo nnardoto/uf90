@@ -2,7 +2,7 @@
 
 [Português (Brasil)](../pt-BR/design/fortls-proxy-v0.2.md)
 
-Status: proposal; not implemented.
+Status: implementation in progress on the 0.2 development branch.
 
 This document records the intended direction for editor support after uf90
 0.1.1. It is meant to provide enough context to start implementation in a new

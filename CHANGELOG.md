@@ -25,6 +25,8 @@ All notable changes to `uf90` are documented in this file. The project follows
 - Pinned `fortls` 3.2.2 integration coverage for cross-file definition,
   references, Unicode hover, unsaved document changes, and clean shutdown
   using the oscillator example.
+- Experimental `uf90-ls` setup guides for VS Code and Neovim 0.10/0.11+ in
+  English and Brazilian Portuguese.
 
 ## [0.1.1] - 2026-08-07
 

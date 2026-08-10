@@ -2,7 +2,7 @@
 
 [English](../../design/fortls-proxy-v0.2.md)
 
-Estado: proposta; ainda não implementada.
+Estado: implementação em andamento na branch de desenvolvimento 0.2.
 
 Este documento registra o caminho pretendido para o suporte a editores depois
 do uf90 0.1.1. Ele contém o contexto necessário para iniciar a implementação em

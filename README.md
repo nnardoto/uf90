@@ -136,14 +136,12 @@ to be updated.
 
 ## Editors
 
-For syntax highlighting and partial language-server support in VS Code, see the
-[VS Code and fortls setup](https://github.com/nnardoto/uf90/blob/main/docs/editors/vscode.md).
-The setup includes a generated fortls configuration that keeps navigation on
-the `.f90u` sources instead of their generated `.f90` files.
-
-A bidirectional fortls proxy is being considered for version 0.2.0. The
-[design proposal](https://github.com/nnardoto/uf90/blob/main/docs/design/fortls-proxy-v0.2.md)
-records the intended architecture and scope; it is not implemented yet.
+The experimental 0.2 `uf90-ls` proxy lets fortls analyze generated `.f90`
+files while editors continue displaying `.f90u`. Setup guides are available
+for [VS Code](https://github.com/nnardoto/uf90/blob/main/docs/editors/vscode.md)
+and [Neovim](https://github.com/nnardoto/uf90/blob/main/docs/editors/neovim.md).
+The [design document](https://github.com/nnardoto/uf90/blob/main/docs/design/fortls-proxy-v0.2.md)
+tracks the architecture, acceptance criteria, and remaining scope.
 
 ## Project status and scope
 
