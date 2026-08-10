@@ -107,7 +107,7 @@ jobs:
           cache: pip
 
       - name: Install project, tests, and pinned fortls
-        run: python -m pip install ".[test]" fortls==3.2.2
+        run: python -m pip install ".[test,lsp]"
 
       - name: Run real language-server integration
         run: python -m pytest -m integration

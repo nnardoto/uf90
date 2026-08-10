@@ -11,10 +11,12 @@ It has been tested with Modern Fortran 4.0.0 and fortls 3.2.2.
 From a checkout of the 0.2 branch:
 
 ```bash
-pipx install --force --editable .
-pipx inject uf90 fortls==3.2.2
+pipx install --force --editable '.[lsp]'
 uf90-ls --version
 ```
+
+After 0.2 is published, the equivalent release installation is
+`pipx install 'uf90[lsp]'`.
 
 The last command should print `3.2.2`. Injecting fortls into the uf90 pipx
 environment also lets GUI-launched editors find it when they do not inherit
@@ -23,7 +25,16 @@ your shell `PATH`.
 ## Workspace settings
 
 Install the [Modern Fortran extension](https://marketplace.visualstudio.com/items?itemName=fortran-lang.linter-gfortran),
-then add this to `.vscode/settings.json`:
+then generate the workspace settings from its root:
+
+```bash
+uf90 editor-config vscode -o .vscode/settings.json
+```
+
+The command detects the absolute `uf90-ls` path. It refuses to replace an
+existing file; if `.vscode/settings.json` already exists, run
+`uf90 editor-config vscode` without `-o` and merge the printed keys. The
+generated content is:
 
 ```json
 {
@@ -38,8 +49,8 @@ then add this to `.vscode/settings.json`:
 }
 ```
 
-Use `command -v uf90-ls` (or `where uf90-ls` on Windows) to obtain the absolute
-path. Full-document synchronization is required by the current proxy.
+Use `--server /custom/path/to/uf90-ls` when automatic detection is not suitable.
+Full-document synchronization is required by the current proxy.
 
 Do not select `.uf90-fortls.json` in proxy mode. That legacy configuration
 indexes `.f90u` directly, while `uf90-ls` needs fortls to index generated

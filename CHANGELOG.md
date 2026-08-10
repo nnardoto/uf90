@@ -27,6 +27,9 @@ All notable changes to `uf90` are documented in this file. The project follows
   using the oscillator example.
 - Experimental `uf90-ls` setup guides for VS Code and Neovim 0.10/0.11+ in
   English and Brazilian Portuguese.
+- `lsp` installation extra and `uf90 editor-config` generator for ready-to-use
+  VS Code and Neovim configurations without overwriting existing files by
+  default.
 
 ## [0.1.1] - 2026-08-07
 

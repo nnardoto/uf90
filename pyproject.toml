@@ -38,6 +38,7 @@ Changelog = "https://github.com/nnardoto/uf90/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 test = ["pytest>=7"]
+lsp = ["fortls==3.2.2"]
 
 [project.scripts]
 uf90 = "uf90.cli:main"

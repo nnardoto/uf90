@@ -10,6 +10,7 @@ import sys
 from .translator import translate_file, TranslateOptions
 from .sync import sync_project, SyncOptions
 from .editor import write_fortls_config
+from .editor_setup import EDITORS, render_editor_config, write_editor_config
 from . import __version__
 
 
@@ -82,6 +83,24 @@ def _cmd_fortls_config(ns: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_editor_config(ns: argparse.Namespace) -> int:
+    if ns.output is None:
+        print(render_editor_config(ns.editor, ns.server), end="")
+        return 0
+    try:
+        output = write_editor_config(
+            ns.editor,
+            ns.output,
+            server=ns.server,
+            force=ns.force,
+        )
+    except FileExistsError as exc:
+        print(f"uf90 editor-config: {exc}", file=sys.stderr)
+        return 2
+    print(str(output))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(prog="uf90", description="Unicode Fortran workflow (.f90u -> .f90).")
     ap.add_argument("--version", action="version", version=f"uf90 {__version__}")
@@ -118,6 +137,30 @@ def build_parser() -> argparse.ArgumentParser:
     ep.add_argument("-o", "--output", type=Path, default=None)
     ep.add_argument("--ext", action="append", default=None)
     ep.set_defaults(_fn=_cmd_fortls_config)
+
+    esp = sub.add_parser(
+        "editor-config",
+        help="Gera configuração experimental do uf90-ls para um editor.",
+    )
+    esp.add_argument("editor", choices=EDITORS)
+    esp.add_argument(
+        "-o",
+        "--output",
+        type=Path,
+        default=None,
+        help="Grava em arquivo; sem esta opção, imprime na saída padrão.",
+    )
+    esp.add_argument(
+        "--server",
+        default=None,
+        help="Caminho explícito do uf90-ls; por padrão, detecta pelo PATH.",
+    )
+    esp.add_argument(
+        "--force",
+        action="store_true",
+        help="Permite substituir o arquivo indicado por --output.",
+    )
+    esp.set_defaults(_fn=_cmd_editor_config)
 
     fp = sub.add_parser("fpm", help="Roda 'sync' e depois chama o fpm com os argumentos fornecidos.")
     fp.add_argument("--root", type=Path, default=Path("."))

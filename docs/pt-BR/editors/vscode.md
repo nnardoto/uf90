@@ -11,10 +11,12 @@ foi testada com Modern Fortran 4.0.0 e fortls 3.2.2.
 A partir de um checkout da branch 0.2:
 
 ```bash
-pipx install --force --editable .
-pipx inject uf90 fortls==3.2.2
+pipx install --force --editable '.[lsp]'
 uf90-ls --version
 ```
+
+Depois da publicação da versão 0.2, a instalação equivalente será
+`pipx install 'uf90[lsp]'`.
 
 O último comando deve imprimir `3.2.2`. Injetar o fortls no ambiente pipx do
 uf90 também permite que editores iniciados pela interface gráfica o encontrem
@@ -23,7 +25,16 @@ quando não herdam o `PATH` do shell.
 ## Configuração do workspace
 
 Instale a [extensão Modern Fortran](https://marketplace.visualstudio.com/items?itemName=fortran-lang.linter-gfortran)
-e adicione isto a `.vscode/settings.json`:
+e gere a configuração a partir da raiz do workspace:
+
+```bash
+uf90 editor-config vscode -o .vscode/settings.json
+```
+
+O comando detecta o caminho absoluto de `uf90-ls`. Ele se recusa a substituir
+um arquivo existente; se `.vscode/settings.json` já existir, execute
+`uf90 editor-config vscode` sem `-o` e incorpore as chaves impressas. O conteúdo
+gerado é:
 
 ```json
 {
@@ -38,8 +49,8 @@ e adicione isto a `.vscode/settings.json`:
 }
 ```
 
-Use `command -v uf90-ls` (ou `where uf90-ls` no Windows) para obter o caminho
-absoluto. A versão atual do proxy requer sincronização integral do documento.
+Use `--server /caminho/personalizado/uf90-ls` se a detecção automática não for
+adequada. A versão atual do proxy requer sincronização integral do documento.
 
 Não selecione `.uf90-fortls.json` no modo proxy. Essa configuração legada
 indexa `.f90u` diretamente, enquanto `uf90-ls` precisa que o fortls indexe os

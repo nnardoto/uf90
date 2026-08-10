@@ -128,6 +128,7 @@ uf90 sync [directory]
 uf90 check [directory]
 uf90 translate source.f90u [-o source.f90]
 uf90 fortls-config [directory]
+uf90 editor-config {vscode,neovim} [-o file]
 ```
 
 `uf90 sync` uses `.uf90-manifest.json` as an incremental cache. `uf90 check`
@@ -142,6 +143,11 @@ for [VS Code](https://github.com/nnardoto/uf90/blob/main/docs/editors/vscode.md)
 and [Neovim](https://github.com/nnardoto/uf90/blob/main/docs/editors/neovim.md).
 The [design document](https://github.com/nnardoto/uf90/blob/main/docs/design/fortls-proxy-v0.2.md)
 tracks the architecture, acceptance criteria, and remaining scope.
+
+From a 0.2 development checkout, install the proxy and its tested fortls in one
+isolated environment with `pipx install --force --editable '.[lsp]'`. Then use
+`uf90 editor-config vscode` or `uf90 editor-config neovim` to generate a ready
+configuration.
 
 ## Project status and scope
 

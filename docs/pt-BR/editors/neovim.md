@@ -6,14 +6,29 @@ O proxy não depende do editor e funciona com o cliente LSP nativo do Neovim.
 Primeiro, instale a versão em desenvolvimento e o fortls fixado:
 
 ```bash
-pipx install --force --editable .
-pipx inject uf90 fortls==3.2.2
+pipx install --force --editable '.[lsp]'
 uf90-ls --version
 ```
 
+Depois da publicação da versão 0.2, use `pipx install 'uf90[lsp]'` para a
+versão de lançamento.
+
 ## Neovim 0.11 ou mais recente
 
-Adicione isto ao `init.lua`:
+Gere um módulo Lua e carregue-o pelo `init.lua`:
+
+```bash
+uf90 editor-config neovim -o ~/.config/nvim/lua/uf90.lua
+```
+
+```lua
+require('uf90')
+```
+
+O gerador detecta o caminho de `uf90-ls` e se recusa a substituir um arquivo
+existente. Use `uf90 editor-config neovim` sem `-o` para imprimir a configuração
+ou `--server /caminho/personalizado/uf90-ls` para selecionar o executável. O
+módulo gerado contém:
 
 ```lua
 vim.filetype.add({
@@ -37,8 +52,8 @@ necessário para essa definição personalizada. Se você já habilita a
 configuração `fortls` dele, desabilite-a para que apenas um servidor de
 linguagem se conecte aos buffers Fortran.
 
-Se `uf90-ls` não estiver no `PATH` do Neovim, substitua-o em `cmd` pelo caminho
-absoluto mostrado por `command -v uf90-ls`.
+O caminho absoluto gerado também funciona quando o Neovim não herda o `PATH` do
+shell.
 
 ## Neovim 0.10
 

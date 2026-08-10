@@ -123,6 +123,7 @@ uf90 sync [diretório]
 uf90 check [diretório]
 uf90 translate arquivo.f90u [-o arquivo.f90]
 uf90 fortls-config [diretório]
+uf90 editor-config {vscode,neovim} [-o arquivo]
 ```
 
 `uf90 sync` usa `.uf90-manifest.json` como cache incremental. `uf90 check` não
@@ -136,6 +137,12 @@ arquivos `.f90` gerados enquanto os editores continuam exibindo `.f90u`. Há
 guias de configuração para [VS Code](editors/vscode.md) e
 [Neovim](editors/neovim.md). O [documento de arquitetura](design/fortls-proxy-v0.2.md)
 acompanha os critérios de aceite e o escopo restante.
+
+A partir de um checkout de desenvolvimento 0.2, instale o proxy e o fortls
+testado no mesmo ambiente isolado com
+`pipx install --force --editable '.[lsp]'`. Depois use
+`uf90 editor-config vscode` ou `uf90 editor-config neovim` para gerar uma
+configuração pronta.
 
 ## Estado e escopo
 
